@@ -21,44 +21,44 @@ struct VertData {
 	float2 uv : TEXCOORD0;
 };
 
-VertData VSDefault(VertData input)
+VertData VSDefault(VertData vert_in)
 {
-	VertData output;
-	output.pos = mul(float4(input.pos.xyz, 1.0), ViewProj);
-	output.uv = input.uv;
-	return output;
+	VertData vert_out;
+	vert_out.pos = mul(float4(vert_in.pos.xyz, 1.0), ViewProj);
+	vert_out.uv = vert_in.uv;
+	return vert_out;
 }
 
-float4 PSGaussian(VertData input) : TARGET
+float4 PSGaussian(VertData vert_in) : TARGET
 {
-	float4 color = image.Sample(linear_clamp, input.uv) * 0.2270270270;
-	color += image.Sample(linear_clamp, input.uv + direction * 1.3846153846) * 0.3162162162;
-	color += image.Sample(linear_clamp, input.uv - direction * 1.3846153846) * 0.3162162162;
-	color += image.Sample(linear_clamp, input.uv + direction * 3.2307692308) * 0.0702702703;
-	color += image.Sample(linear_clamp, input.uv - direction * 3.2307692308) * 0.0702702703;
+	float4 color = image.Sample(linear_clamp, vert_in.uv) * 0.2270270270;
+	color += image.Sample(linear_clamp, vert_in.uv + direction * 1.3846153846) * 0.3162162162;
+	color += image.Sample(linear_clamp, vert_in.uv - direction * 1.3846153846) * 0.3162162162;
+	color += image.Sample(linear_clamp, vert_in.uv + direction * 3.2307692308) * 0.0702702703;
+	color += image.Sample(linear_clamp, vert_in.uv - direction * 3.2307692308) * 0.0702702703;
 	return color;
 }
 
-float4 PSBox(VertData input) : TARGET
+float4 PSBox(VertData vert_in) : TARGET
 {
-	float4 color = image.Sample(linear_clamp, input.uv - direction * 4.0);
-	color += image.Sample(linear_clamp, input.uv - direction * 3.0);
-	color += image.Sample(linear_clamp, input.uv - direction * 2.0);
-	color += image.Sample(linear_clamp, input.uv - direction);
-	color += image.Sample(linear_clamp, input.uv);
-	color += image.Sample(linear_clamp, input.uv + direction);
-	color += image.Sample(linear_clamp, input.uv + direction * 2.0);
-	color += image.Sample(linear_clamp, input.uv + direction * 3.0);
-	color += image.Sample(linear_clamp, input.uv + direction * 4.0);
+	float4 color = image.Sample(linear_clamp, vert_in.uv - direction * 4.0);
+	color += image.Sample(linear_clamp, vert_in.uv - direction * 3.0);
+	color += image.Sample(linear_clamp, vert_in.uv - direction * 2.0);
+	color += image.Sample(linear_clamp, vert_in.uv - direction);
+	color += image.Sample(linear_clamp, vert_in.uv);
+	color += image.Sample(linear_clamp, vert_in.uv + direction);
+	color += image.Sample(linear_clamp, vert_in.uv + direction * 2.0);
+	color += image.Sample(linear_clamp, vert_in.uv + direction * 3.0);
+	color += image.Sample(linear_clamp, vert_in.uv + direction * 4.0);
 	return color / 9.0;
 }
 
-float4 PSPixelate(VertData input) : TARGET
+float4 PSPixelate(VertData vert_in) : TARGET
 {
 	float2 safe_texture_size = max(texture_size, float2(1.0, 1.0));
 	float2 block_uv = max(float2(pixel_size, pixel_size) / safe_texture_size,
 			      float2(1.0, 1.0) / safe_texture_size);
-	float2 sample_uv = (floor(input.uv / block_uv) + 0.5) * block_uv;
+	float2 sample_uv = (floor(vert_in.uv / block_uv) + 0.5) * block_uv;
 	return image.Sample(point_clamp, sample_uv);
 }
 
