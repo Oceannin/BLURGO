@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+if (( $# != 3 )); then
+  echo "Usage: $0 QA_ROOT PYTHON_BINARY OBS_BINARY" >&2
+  exit 2
+fi
+
+qa_root="$1"
+qa_python="$2"
+obs_binary="$3"
+config_root="${qa_root}/config"
+evidence_root="${qa_root}/evidence"
+console_log="${evidence_root}/obs-console.log"
+
+mkdir -p \
+  "${config_root}/obs-studio/plugin_config/obs-websocket" \
+  "${config_root}/obs-studio/basic/profiles/BlurGo-QA" \
+  "${evidence_root}" \
+  "${qa_root}/cache" \
+  "${qa_root}/data"
+
+cat > "${config_root}/obs-studio/plugin_config/obs-websocket/config.json" <<'JSON'
+{
+  "alerts_enabled": false,
+  "auth_required": false,
+  "first_load": false,
+  "server_enabled": true,
+  "server_password": "",
+  "server_port": 4455
+}
+JSON
+
+cat > "${config_root}/obs-studio/global.ini" <<'INI'
+[General]
+FirstRun=false
+
+[Basic]
+Profile=BlurGo QA
+ProfileDir=BlurGo-QA
+SceneCollection=BlurGo QA
+SceneCollectionFile=BlurGo-QA
+INI
+
+cat > "${config_root}/obs-studio/basic/profiles/BlurGo-QA/basic.ini" <<'INI'
+[General]
+Name=BlurGo QA
+
+[Video]
+BaseCX=1280
+BaseCY=720
+OutputCX=1280
+OutputCY=720
+FPSType=2
+FPSInt=60
+FPSNum=60
+FPSDen=1
+ColorFormat=NV12
+ColorSpace=709
+ColorRange=Partial
+INI
+
+obs_runner_pid=""
+cleanup() {
+  if [[ -n "${obs_runner_pid}" ]] && kill -0 "${obs_runner_pid}" 2>/dev/null; then
+    kill -TERM "${obs_runner_pid}" 2>/dev/null || true
+    wait "${obs_runner_pid}" 2>/dev/null || true
+  fi
+
+  find "${config_root}/obs-studio/logs" -maxdepth 1 -type f -name '*.txt' \
+    -exec cp -f {} "${evidence_root}/" \; 2>/dev/null || true
+}
+trap cleanup EXIT
+
+env \
+  XDG_CONFIG_HOME="${config_root}" \
+  XDG_CACHE_HOME="${qa_root}/cache" \
+  XDG_DATA_HOME="${qa_root}/data" \
+  LIBGL_ALWAYS_SOFTWARE=1 \
+  QT_QPA_PLATFORM=xcb \
+  timeout --kill-after=10s 150s \
+  xvfb-run -a -s '-screen 0 1280x720x24' \
+  "${obs_binary}" \
+  --multi \
+  --disable-shutdown-check \
+  --minimize-to-tray \
+  --websocket_port=4455 \
+  > "${console_log}" 2>&1 &
+obs_runner_pid=$!
+
+websocket_ready=false
+for _ in {1..60}; do
+  if "${qa_python}" -c 'import socket; socket.create_connection(("127.0.0.1", 4455), 0.25).close()' \
+    2>/dev/null; then
+    websocket_ready=true
+    break
+  fi
+  if ! kill -0 "${obs_runner_pid}" 2>/dev/null; then
+    echo "OBS exited before its WebSocket server became ready." >&2
+    tail -n 200 "${console_log}" >&2 || true
+    exit 1
+  fi
+  sleep 1
+done
+
+if [[ "${websocket_ready}" != true ]]; then
+  echo "OBS WebSocket did not become ready within 60 seconds." >&2
+  tail -n 200 "${console_log}" >&2 || true
+  exit 1
+fi
+
+"${qa_python}" tools/obs-smoke.py run \
+  --output-dir "${evidence_root}" \
+  --width 1280 \
+  --height 720 \
+  --fps 60 \
+  --set-video-settings \
+  --stats-seconds 3 \
+  --scene-switches 20
+
+if ! grep -Fq '[blurgo] loaded successfully' "${console_log}"; then
+  echo "OBS did not report a successful BlurGo load." >&2
+  tail -n 200 "${console_log}" >&2 || true
+  exit 1
+fi
+
+echo "Linux OBS runtime smoke passed."

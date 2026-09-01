@@ -224,6 +224,30 @@ jobs:
           config: ${{ needs.check-event.outputs.config }}
           package: ${{ fromJSON(needs.check-event.outputs.package) }}
 
+      - name: Run OBS Runtime Smoke
+        timeout-minutes: 5
+        env:
+          BLURGO_PACKAGE: ${{ github.workspace }}/release/${{ steps.setup.outputs.pluginName }}-${{ steps.setup.outputs.pluginVersion }}-x86_64-linux-gnu.deb
+          BLURGO_QA_ROOT: ${{ runner.temp }}/blurgo-obs-qa
+        run: |
+          : Run OBS Runtime Smoke
+          sudo apt-get install --no-install-recommends --yes python3-venv xauth xvfb
+          sudo apt-get install --yes "${BLURGO_PACKAGE}"
+          python3 -m venv "${BLURGO_QA_ROOT}/venv"
+          "${BLURGO_QA_ROOT}/venv/bin/pip" install --requirement tools/requirements-qa.txt
+          bash tools/run-linux-obs-smoke \
+            "${BLURGO_QA_ROOT}" \
+            "${BLURGO_QA_ROOT}/venv/bin/python" \
+            /usr/bin/obs
+
+      - name: Upload Linux Runtime QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.setup.outputs.pluginName }}-${{ steps.setup.outputs.pluginVersion }}-${{ matrix.os }}-x86_64-${{ needs.check-event.outputs.commitHash }}-runtime-qa
+          path: ${{ runner.temp }}/blurgo-obs-qa/evidence
+          if-no-files-found: warn
+
       - name: Upload Source Tarball 🗜️
         uses: actions/upload-artifact@v4
         with:
