@@ -143,6 +143,9 @@ build() {
   run_xcodebuild ${build_args}
   popd
 
+  log_group "Testing ${product_name}..."
+  ctest --test-dir build_macos -C ${config} --output-on-failure
+
   log_group "Installing ${product_name}..."
   cmake --install build_macos --config ${config} --prefix "${project_root}/release/${config}"
 
