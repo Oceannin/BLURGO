@@ -30,6 +30,7 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 - Zero-mix and zero-radius blur settings now use OBS's direct filter bypass instead of spending GPU time on invisible passes.
 - Filter creation now fails safely when a required shader parameter is missing.
 - Formatting workflows explicitly trust only the required OBS Homebrew formulae, preserving CI compatibility with Homebrew 6 tap security.
+- Formatting workflows call the shared formatter driver directly and no longer depend on runner symlink materialization.
 - Binary packages now include the GPL license, README, contributor guide, and security policy in platform-appropriate locations.
 - The OBS runtime harness can configure disposable video profiles, run long scene-switch stress tests, select an available display-capture monitor, and discard private capture frames after numeric validation.
 - Windows QA now covers OBS 31.1.1 and 32.2.2, SDR through 4K60, P010/Rec. 2100 PQ, and a 30-minute memory-stability run.

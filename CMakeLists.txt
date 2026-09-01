@@ -40,11 +40,7 @@ endif()
 
 target_sources(
   ${CMAKE_PROJECT_NAME}
-  PRIVATE
-    src/blurgo-filter.c
-    src/blurgo-settings.c
-    src/blurgo-settings.h
-    src/plugin-main.c
+  PRIVATE src/blurgo-filter.c src/blurgo-settings.c src/blurgo-settings.h src/plugin-main.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE src)
@@ -57,11 +53,7 @@ if(OS_MACOS)
   target_add_resource(${CMAKE_PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/SECURITY.md")
   target_add_resource(${CMAKE_PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/CONTRIBUTING.md")
 elseif(OS_WINDOWS)
-  install(
-    FILES LICENSE README.md SECURITY.md CONTRIBUTING.md
-    DESTINATION "${CMAKE_PROJECT_NAME}"
-    COMPONENT Runtime
-  )
+  install(FILES LICENSE README.md SECURITY.md CONTRIBUTING.md DESTINATION "${CMAKE_PROJECT_NAME}" COMPONENT Runtime)
 else()
   install(
     FILES LICENSE README.md SECURITY.md CONTRIBUTING.md

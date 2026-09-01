@@ -58,5 +58,5 @@ runs:
 
         print ::group::Run clang-format-19
         local -a changes=(${(s:,:)CHANGED_FILES//[\[\]\'\"]/})
-        ./build-aux/run-clang-format --fail-${{ inputs.failCondition }} --check ${changes}
+        FORMATTER_NAME=clang ./build-aux/.run-format.zsh --fail-${{ inputs.failCondition }} --check ${changes}
         print ::endgroup::
