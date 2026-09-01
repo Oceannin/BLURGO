@@ -24,6 +24,7 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 - Windows 11/D3D11 on-device smoke validation for image-source and nested-scene rendering.
 - Reproducible OBS WebSocket runtime harness for render, lifecycle, transparency, persistence, and basic performance evidence.
 - Headless Ubuntu OBS runtime validation that installs and exercises the packaged plugin under Xvfb.
+- Hosted macOS OBS runtime validation that installs and exercises the packaged plugin in a real OBS process.
 
 ### Fixed
 

@@ -156,6 +156,32 @@ jobs:
           codesignUser: ${{ secrets.MACOS_NOTARIZATION_USERNAME }}
           codesignPass: ${{ secrets.MACOS_NOTARIZATION_PASSWORD }}
 
+      - name: Run OBS Runtime Smoke
+        timeout-minutes: 10
+        env:
+          BLURGO_PACKAGE: ${{ github.workspace }}/release/${{ steps.setup.outputs.pluginName }}-${{ steps.setup.outputs.pluginVersion }}-macos-universal.pkg
+          BLURGO_QA_ROOT: ${{ runner.temp }}/blurgo-obs-qa
+          HOMEBREW_NO_AUTO_UPDATE: 1
+        run: |
+          if [[ ! -d /Applications/OBS.app ]]; then
+            brew install --cask obs
+          fi
+          sudo /usr/sbin/installer -pkg "${BLURGO_PACKAGE}" -target /
+          python3 -m venv "${BLURGO_QA_ROOT}/venv"
+          "${BLURGO_QA_ROOT}/venv/bin/pip" install --requirement tools/requirements-qa.txt
+          bash tools/run-macos-obs-smoke \
+            "${BLURGO_QA_ROOT}" \
+            "${BLURGO_QA_ROOT}/venv/bin/python" \
+            /Applications/OBS.app/Contents/MacOS/OBS
+
+      - name: Upload macOS Runtime QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.setup.outputs.pluginName }}-${{ steps.setup.outputs.pluginVersion }}-macos-universal-${{ needs.check-event.outputs.commitHash }}-runtime-qa
+          path: ${{ runner.temp }}/blurgo-obs-qa/evidence
+          if-no-files-found: warn
+
       - name: Upload Artifacts 📡
         uses: actions/upload-artifact@v4
         with:
