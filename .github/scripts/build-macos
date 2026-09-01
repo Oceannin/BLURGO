@@ -143,6 +143,8 @@ build() {
   run_xcodebuild ${build_args}
   popd
 
+  cmake --build build_macos --config ${config} --target blurgo-settings-tests
+
   log_group "Testing ${product_name}..."
   ctest --test-dir build_macos -C ${config} --output-on-failure
 
