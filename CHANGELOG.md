@@ -36,6 +36,7 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 - Tagged releases now require a version matching `buildspec.json` and combine versioned release notes with generated package checksums.
 - Binary packages now include the GPL license, README, contributor guide, and security policy in platform-appropriate locations.
 - The OBS runtime harness can configure disposable video profiles, run long scene-switch stress tests, select an available display-capture monitor, and discard private capture frames after numeric validation.
+- Runtime alpha validation accepts near-transparent pixels produced by wide blur kernels while still rejecting lost or flattened alpha channels.
 - Windows QA now covers OBS 31.1.1 and 32.2.2, SDR through 4K60, P010/Rec. 2100 PQ, and a 30-minute memory-stability run.
 
 ### Known limitations

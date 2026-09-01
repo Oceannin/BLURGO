@@ -195,12 +195,23 @@ def compare_png(reference: Path, candidate: Path) -> dict[str, float | int | str
     total = 0
     black_pixels = 0
     transparent_pixels = 0
+    low_alpha_pixels = 0
+    alpha_total = 0
+    alpha_min = 255
+    alpha_max = 255 if channels != 4 else 0
     for index in range(0, len(left), channels):
         total += sum(abs(left[index + channel] - right[index + channel]) for channel in range(rgb_channels))
         if max(right[index : index + rgb_channels]) <= 2:
             black_pixels += 1
-        if channels == 4 and right[index + 3] == 0:
-            transparent_pixels += 1
+        if channels == 4:
+            alpha = right[index + 3]
+            alpha_total += alpha
+            alpha_min = min(alpha_min, alpha)
+            alpha_max = max(alpha_max, alpha)
+            if alpha == 0:
+                transparent_pixels += 1
+            if alpha <= 8:
+                low_alpha_pixels += 1
 
     pixel_count = width * height
     return {
@@ -208,6 +219,10 @@ def compare_png(reference: Path, candidate: Path) -> dict[str, float | int | str
         "mean_absolute_rgb_difference": round(total / (pixel_count * rgb_channels), 4),
         "black_pixel_ratio": round(black_pixels / pixel_count, 6),
         "transparent_pixel_ratio": round(transparent_pixels / pixel_count, 6),
+        "low_alpha_pixel_ratio": round(low_alpha_pixels / pixel_count, 6),
+        "alpha_min": alpha_min,
+        "alpha_max": alpha_max,
+        "alpha_mean": round(alpha_total / pixel_count, 4) if channels == 4 else 255.0,
     }
 
 
@@ -508,8 +523,12 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             render_results[name] = compare_png(original, candidate)
             if render_results[name]["mean_absolute_rgb_difference"] <= 0.05:
                 raise RuntimeError(f"{name} did not materially change the source")
-            if not 0.0 < render_results[name]["transparent_pixel_ratio"] < 1.0:
-                raise RuntimeError(f"{name} did not preserve a meaningful transparent region")
+            if (
+                render_results[name]["alpha_min"] > 8
+                or render_results[name]["alpha_max"] < 247
+                or render_results[name]["low_alpha_pixel_ratio"] <= 0.0005
+            ):
+                raise RuntimeError(f"{name} did not preserve a meaningful alpha range")
 
         for settings, name in (
             ({"mode": 0, "radius": 18.0, "mix": 0.0}, "mix-zero"),
