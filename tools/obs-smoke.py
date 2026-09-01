@@ -242,6 +242,180 @@ async def sample_stats(client: ObsClient, seconds: float) -> dict[str, float]:
     }
 
 
+async def stress_scene_switches(
+    client: ObsClient, scene: str, wrapper: str, seconds: float, interval: float
+) -> dict[str, Any] | None:
+    if seconds <= 0.0:
+        return None
+
+    started = time.monotonic()
+    deadline = started + seconds
+    samples: list[dict[str, float]] = []
+    switches = 0
+    sample_every = max(1, round(2.0 / interval))
+    while time.monotonic() < deadline:
+        await client.request(
+            "SetCurrentProgramScene", {"sceneName": wrapper if switches % 2 else scene}
+        )
+        switches += 1
+        await asyncio.sleep(interval)
+        if switches % sample_every == 0:
+            stats = await client.request("GetStats")
+            samples.append(
+                {
+                    "elapsed_seconds": round(time.monotonic() - started, 3),
+                    "memory_usage_mb": stats["memoryUsage"],
+                    "average_frame_render_time_ms": stats["averageFrameRenderTime"],
+                    "render_skipped_frames": stats["renderSkippedFrames"],
+                }
+            )
+
+    await client.request("SetCurrentProgramScene", {"sceneName": wrapper})
+    if not samples:
+        return {"seconds": seconds, "switches": switches, "samples": 0}
+
+    x_mean = sum(sample["elapsed_seconds"] for sample in samples) / len(samples)
+    y_mean = sum(sample["memory_usage_mb"] for sample in samples) / len(samples)
+    denominator = sum((sample["elapsed_seconds"] - x_mean) ** 2 for sample in samples)
+    slope_per_second = (
+        sum(
+            (sample["elapsed_seconds"] - x_mean) * (sample["memory_usage_mb"] - y_mean)
+            for sample in samples
+        )
+        / denominator
+        if denominator
+        else 0.0
+    )
+    return {
+        "seconds": round(time.monotonic() - started, 3),
+        "switches": switches,
+        "samples": len(samples),
+        "memory_first_mb": round(samples[0]["memory_usage_mb"], 4),
+        "memory_last_mb": round(samples[-1]["memory_usage_mb"], 4),
+        "memory_min_mb": round(min(sample["memory_usage_mb"] for sample in samples), 4),
+        "memory_max_mb": round(max(sample["memory_usage_mb"] for sample in samples), 4),
+        "memory_slope_mb_per_minute": round(slope_per_second * 60.0, 6),
+        "render_skipped_frames_start": samples[0]["render_skipped_frames"],
+        "render_skipped_frames_end": samples[-1]["render_skipped_frames"],
+        "max_frame_render_time_ms": round(
+            max(sample["average_frame_render_time_ms"] for sample in samples), 4
+        ),
+    }
+
+
+async def test_display_capture(
+    client: ObsClient, output: Path, run_id: str, width: int, height: int
+) -> dict[str, Any]:
+    kinds = (await client.request("GetInputKindList"))["inputKinds"]
+    candidates = [kind for kind in kinds if kind.startswith("monitor_capture")]
+    if not candidates:
+        return {"status": "skipped", "reason": "No monitor capture input kind is available"}
+
+    scene = f"BlurGo Display QA {run_id}"
+    source = f"BlurGo Display Capture {run_id}"
+    filter_name = "BlurGo Display QA"
+    evidence_files: list[Path] = []
+    previous_scene = (await client.request("GetCurrentProgramScene"))["currentProgramSceneName"]
+    await client.request("CreateScene", {"sceneName": scene})
+    try:
+        await client.request(
+            "CreateInput",
+            {
+                "sceneName": scene,
+                "inputName": source,
+                "inputKind": candidates[0],
+                "inputSettings": {},
+                "sceneItemEnabled": True,
+            },
+        )
+        monitor_selection = "default"
+        for property_name in ("monitor_id", "monitor"):
+            property_response = await client.request(
+                "GetInputPropertiesListPropertyItems",
+                {"inputName": source, "propertyName": property_name},
+                allow_failure=True,
+            )
+            property_items = property_response.get("propertyItems", [])
+            available_items = [
+                item
+                for item in property_items
+                if item.get("itemEnabled", True) and item.get("itemValue") not in (None, "")
+            ]
+            if not available_items:
+                continue
+            await client.request(
+                "SetInputSettings",
+                {
+                    "inputName": source,
+                    "inputSettings": {property_name: available_items[0]["itemValue"]},
+                    "overlay": True,
+                },
+            )
+            monitor_selection = f"first_available_{property_name}"
+            break
+        await client.request("SetCurrentProgramScene", {"sceneName": scene})
+        await asyncio.sleep(0.75)
+        baseline = output / "private-display-baseline.png"
+        evidence_files.append(baseline)
+        await save_screenshot(client, source, baseline, width, height)
+        baseline_metrics = compare_png(baseline, baseline)
+        if baseline_metrics["black_pixel_ratio"] > 0.98:
+            return {
+                "status": "skipped",
+                "input_kind": candidates[0],
+                "monitor_selection": monitor_selection,
+                "reason": "Selected monitor capture produced an almost entirely black frame",
+            }
+
+        await client.request(
+            "CreateSourceFilter",
+            {
+                "sourceName": source,
+                "filterName": filter_name,
+                "filterKind": "blurgo_filter",
+                "filterSettings": {
+                    "mode": 0,
+                    "radius": 12.0,
+                    "passes": 2,
+                    "pixel_size": 20.0,
+                    "mix": 100.0,
+                },
+            },
+        )
+        results: dict[str, dict[str, float | int | str]] = {}
+        for mode, name in ((0, "gaussian"), (1, "box"), (2, "pixelate")):
+            await client.request(
+                "SetSourceFilterSettings",
+                {
+                    "sourceName": source,
+                    "filterName": filter_name,
+                    "filterSettings": {"mode": mode},
+                    "overlay": True,
+                },
+            )
+            await asyncio.sleep(0.2)
+            candidate = output / f"private-display-{name}.png"
+            evidence_files.append(candidate)
+            await save_screenshot(client, source, candidate, width, height)
+            results[name] = compare_png(baseline, candidate)
+            if results[name]["mean_absolute_rgb_difference"] <= 0.05:
+                raise RuntimeError(f"Display capture {name} did not materially change the frame")
+        return {
+            "status": "passed",
+            "input_kind": candidates[0],
+            "monitor_selection": monitor_selection,
+            "results": results,
+        }
+    finally:
+        await client.request(
+            "SetCurrentProgramScene", {"sceneName": previous_scene}, allow_failure=True
+        )
+        await client.request("RemoveInput", {"inputName": source}, allow_failure=True)
+        await client.request("RemoveScene", {"sceneName": scene}, allow_failure=True)
+        for path in evidence_files:
+            path.unlink(missing_ok=True)
+
+
 async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -258,7 +432,31 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
     scene_filter = "BlurGo Scene QA"
 
     async with ObsClient(args.url, args.password) as client:
-        version = await client.request("GetVersion")
+        version_response = await client.request("GetVersion")
+        version = {
+            key: version_response[key]
+            for key in (
+                "obsVersion",
+                "obsWebSocketVersion",
+                "platform",
+                "platformDescription",
+                "rpcVersion",
+            )
+        }
+        video_before = await client.request("GetVideoSettings")
+        if args.set_video_settings:
+            await client.request(
+                "SetVideoSettings",
+                {
+                    "baseWidth": args.width,
+                    "baseHeight": args.height,
+                    "outputWidth": args.width,
+                    "outputHeight": args.height,
+                    "fpsNumerator": args.fps,
+                    "fpsDenominator": 1,
+                },
+            )
+        video_during_test = await client.request("GetVideoSettings")
         await client.request("CreateScene", {"sceneName": scene})
         await client.request("CreateScene", {"sceneName": wrapper})
         await client.request(
@@ -424,6 +622,14 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             )
             await asyncio.sleep(0.1)
         await client.request("SetCurrentProgramScene", {"sceneName": wrapper})
+        stress = await stress_scene_switches(
+            client, scene, wrapper, args.stress_seconds, args.switch_interval
+        )
+        display_capture = (
+            await test_display_capture(client, output, run_id, args.width, args.height)
+            if args.test_display_capture
+            else {"status": "not_requested"}
+        )
 
         persistence = await client.request("GetSourceFilterList", {"sourceName": scene})
 
@@ -457,6 +663,8 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             "obs_version": version,
             "width": args.width,
             "height": args.height,
+            "video_settings_before": video_before,
+            "video_settings_during_test": video_during_test,
             "scene": scene,
             "wrapper_scene": wrapper,
             "input": input_name,
@@ -466,6 +674,8 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             "scene_result": scene_result,
             "filter_state_before_restart": persistence["filters"],
             "performance": {"baseline": baseline_stats, "filtered": filtered_stats},
+            "stress": stress,
+            "display_capture": display_capture,
             "final_stats": stats,
         }
 
@@ -498,6 +708,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--height", type=int, default=1080)
     parser.add_argument("--stats-seconds", type=float, default=3.0)
     parser.add_argument("--scene-switches", type=int, default=20)
+    parser.add_argument("--set-video-settings", action="store_true")
+    parser.add_argument("--fps", type=int, default=60)
+    parser.add_argument("--stress-seconds", type=float, default=0.0)
+    parser.add_argument("--switch-interval", type=float, default=0.25)
+    parser.add_argument(
+        "--test-display-capture",
+        action="store_true",
+        help="Capture the first available monitor locally, validate all modes, then delete private screenshots",
+    )
     return parser.parse_args()
 
 
@@ -505,6 +724,8 @@ def main() -> None:
     args = parse_args()
     if args.width < 64 or args.height < 64:
         raise SystemExit("--width and --height must both be at least 64")
+    if args.fps < 1 or args.switch_interval <= 0.0 or args.stress_seconds < 0.0:
+        raise SystemExit("--fps and --switch-interval must be positive; --stress-seconds cannot be negative")
     result = asyncio.run(run_smoke(args) if args.command == "run" else verify_persistence(args))
     args.output_dir.mkdir(parents=True, exist_ok=True)
     destination = args.output_dir / ("report.json" if args.command == "run" else "persistence.json")

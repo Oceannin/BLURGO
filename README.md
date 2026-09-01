@@ -99,6 +99,14 @@ python tools/obs-smoke.py verify-persistence --output-dir artifacts/obs-smoke --
 
 Use `--password` when OBS WebSocket authentication is enabled. The harness creates uniquely named QA scenes and leaves them in the test scene collection so restart persistence can be verified.
 
+For controlled resolution and stability testing, use a disposable portable OBS profile:
+
+```powershell
+python tools/obs-smoke.py run --output-dir artifacts/obs-stress --width 1920 --height 1080 --fps 60 --set-video-settings --stress-seconds 1800
+```
+
+`--set-video-settings` changes the active OBS profile's canvas/output settings. `--test-display-capture` additionally attempts all modes on the first available monitor, reports unsupported or black-frame capture as skipped, keeps only numeric/hash results, and deletes the temporary private screenshots before exit. Do not use either option in a production scene collection.
+
 ## Project structure
 
 ```text
@@ -113,7 +121,15 @@ cmake/, build-aux/           Official OBS plugin-template build infrastructure
 
 ## Performance guidance
 
-GPU cost grows with source resolution and quality passes. Start with a 12 px radius and two passes. For a 4K source, reduce passes before reducing visual radius. Pixelate requires one processing pass regardless of the quality-pass control.
+GPU cost grows with source resolution and quality passes. The following are conservative starting points, not guarantees; validate them with OBS Stats on the actual scene and capture backend.
+
+| GPU / workload | Starting point |
+| --- | --- |
+| Entry-level or integrated GPU, 1080p60 | Gaussian/Box radius 8-12, one pass; prefer Pixelate when it fits the look. |
+| Mid-tier GPU, 1080p60-1440p60 | Gaussian radius 12, two passes. |
+| High-tier GPU or 4K60 | Gaussian radius 12, two passes; reduce passes first if render time rises. |
+
+Pixelate requires one processing pass regardless of the quality-pass control. Apply BlurGo to a lower-resolution nested scene when the source does not need full-canvas resolution. The published 0.1.0 Windows measurements were collected on an RTX 4070 Ti SUPER and are documented in [the runtime QA report](docs/qa/0.1.0-windows-smoke.md).
 
 ## Troubleshooting
 

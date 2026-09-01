@@ -3,6 +3,8 @@
 /build_*/
 /.deps/
 /install/
+/artifacts/
+/.qa-portable/
 
 # IDE and local tooling
 /.idea/

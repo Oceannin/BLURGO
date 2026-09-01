@@ -51,6 +51,25 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE src)
 
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})
 
+if(OS_MACOS)
+  target_add_resource(${CMAKE_PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+  target_add_resource(${CMAKE_PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+  target_add_resource(${CMAKE_PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/SECURITY.md")
+  target_add_resource(${CMAKE_PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/CONTRIBUTING.md")
+elseif(OS_WINDOWS)
+  install(
+    FILES LICENSE README.md SECURITY.md CONTRIBUTING.md
+    DESTINATION "${CMAKE_PROJECT_NAME}"
+    COMPONENT Runtime
+  )
+else()
+  install(
+    FILES LICENSE README.md SECURITY.md CONTRIBUTING.md
+    DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/doc/${CMAKE_PROJECT_NAME}"
+    COMPONENT Runtime
+  )
+endif()
+
 include(CTest)
 
 if(BUILD_TESTING)
