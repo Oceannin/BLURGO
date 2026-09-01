@@ -1,0 +1,39 @@
+uniform float4x4 ViewProj;
+uniform texture2d image;
+uniform texture2d original_image;
+uniform float mix_amount;
+
+sampler_state linear_clamp {
+	Filter = Linear;
+	AddressU = Clamp;
+	AddressV = Clamp;
+};
+
+struct VertData {
+	float4 pos : POSITION;
+	float2 uv : TEXCOORD0;
+};
+
+VertData VSDefault(VertData input)
+{
+	VertData output;
+	output.pos = mul(float4(input.pos.xyz, 1.0), ViewProj);
+	output.uv = input.uv;
+	return output;
+}
+
+float4 PSComposite(VertData input) : TARGET
+{
+	float4 original = original_image.Sample(linear_clamp, input.uv);
+	float4 processed = image.Sample(linear_clamp, input.uv);
+	return lerp(original, processed, saturate(mix_amount));
+}
+
+technique Draw
+{
+	pass
+	{
+		vertex_shader = VSDefault(input);
+		pixel_shader = PSComposite(input);
+	}
+}

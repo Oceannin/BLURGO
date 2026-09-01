@@ -1,0 +1,54 @@
+name: Bug report
+description: Report a reproducible BlurGo failure or rendering defect
+title: "[Bug]: "
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include stream keys, private source URLs, or unredacted sensitive logs.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      placeholder: Include the source/scene topology and exact BlurGo settings.
+    validations:
+      required: true
+  - type: input
+    id: obs
+    attributes:
+      label: OBS Studio version
+    validations:
+      required: true
+  - type: input
+    id: blurgo
+    attributes:
+      label: BlurGo version
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Operating system, GPU, driver, and graphics backend
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: OBS log or crash report
+      description: Attach a redacted log or provide an OBS log URL.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues.
+          required: true
+        - label: I removed secrets and private information from logs.
+          required: true

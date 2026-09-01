@@ -1,0 +1,21 @@
+# Build output and downloaded SDKs
+/build*/
+/.deps/
+/install/
+
+# IDE and local tooling
+/.idea/
+/.vs/
+/.vscode/
+*.sln
+*.vcxproj*
+
+# Generated dependency locks
+*.lock.json
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Generated build metadata
+/cmake/.CMakeBuildNumber
