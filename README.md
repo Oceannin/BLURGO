@@ -2,7 +2,7 @@
 
 BlurGo is an open-source, GPU-accelerated blur filter for OBS Studio. Add the filter to one source, or add it to a scene to process the complete composited scene.
 
-> Status: `0.1.0` alpha candidate. Windows/D3D11 source and nested-scene rendering has passed an on-device smoke test; production streams should keep a tested OBS scene collection backup until the complete release checklist is signed off.
+> Status: `0.1.0` alpha candidate. Windows/D3D11 and Ubuntu/OpenGL source and nested-scene rendering have passed runtime smoke tests; production streams should keep a tested OBS scene collection backup until the complete release checklist is signed off.
 
 ## Features
 
@@ -19,7 +19,7 @@ BlurGo is an open-source, GPU-accelerated blur filter for OBS Studio. Add the fi
 
 - OBS Studio 31.1.1 or newer.
 - A graphics backend supported by OBS Studio.
-- Windows x64 is the primary alpha test platform. The project also carries the official OBS template presets for macOS Universal and Ubuntu 24.04 x86_64.
+- Windows x64 is the primary alpha performance platform. Ubuntu 24.04 x86_64 has packaged-plugin runtime coverage; macOS Universal currently has build, unit-test, and package coverage.
 
 ## Install a release
 
@@ -28,7 +28,7 @@ BlurGo is an open-source, GPU-accelerated blur filter for OBS Studio. Add the fi
 3. Run the installer or extract the portable package into the matching OBS installation.
 4. Start OBS and check **Help → Log Files → View Current Log** for a `BlurGo` load entry.
 
-No public binary is published until the first alpha tag has passed the complete release checklist. Current QA evidence is recorded in [`docs/qa/0.1.0-windows-smoke.md`](docs/qa/0.1.0-windows-smoke.md).
+No public binary is published until the first alpha tag has passed the complete release checklist. Current QA evidence is recorded in the [Windows runtime report](docs/qa/0.1.0-windows-smoke.md), [Ubuntu runtime report](docs/qa/0.1.0-ubuntu-smoke.md), and [release gate status](docs/qa/0.1.0-gate-status.md).
 
 ## Use BlurGo
 
@@ -129,7 +129,7 @@ GPU cost grows with source resolution and quality passes. The following are cons
 | Mid-tier GPU, 1080p60-1440p60 | Gaussian radius 12, two passes. |
 | High-tier GPU or 4K60 | Gaussian radius 12, two passes; reduce passes first if render time rises. |
 
-Pixelate requires one processing pass regardless of the quality-pass control. Apply BlurGo to a lower-resolution nested scene when the source does not need full-canvas resolution. The published 0.1.0 Windows measurements were collected on an RTX 4070 Ti SUPER and are documented in [the runtime QA report](docs/qa/0.1.0-windows-smoke.md).
+Pixelate requires one processing pass regardless of the quality-pass control. Apply BlurGo to a lower-resolution nested scene when the source does not need full-canvas resolution. The published 0.1.0 Windows measurements were collected on an RTX 4070 Ti SUPER and are documented in [the Windows runtime QA report](docs/qa/0.1.0-windows-smoke.md). The [Ubuntu runtime report](docs/qa/0.1.0-ubuntu-smoke.md) uses software OpenGL for functional coverage and is not a hardware-performance benchmark.
 
 ## Troubleshooting
 
