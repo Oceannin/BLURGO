@@ -21,8 +21,9 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 - Dependency-free settings validation tests.
 - Cross-platform OBS plugin-template build, packaging, and draft-release workflows.
 - Product brief, architecture record, contributor guide, security policy, and release checklist.
+- Windows 11/D3D11 on-device smoke validation for image-source and nested-scene rendering.
 
 ### Known limitations
 
-- The alpha has not yet completed on-device visual QA in OBS Studio.
+- Game/window/display-capture, HDR, long-running stability, and representative GPU performance QA remain before public binary release.
 - Region masks and animated transitions are intentionally outside the first alpha scope.

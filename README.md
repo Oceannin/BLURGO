@@ -2,7 +2,7 @@
 
 BlurGo is an open-source, GPU-accelerated blur filter for OBS Studio. Add the filter to one source, or add it to a scene to process the complete composited scene.
 
-> Status: development build for `0.1.0`. The rendering core is ready for contributor testing; production streams should keep a tested OBS scene collection backup.
+> Status: `0.1.0` alpha candidate. Windows/D3D11 source and nested-scene rendering has passed an on-device smoke test; production streams should keep a tested OBS scene collection backup until the complete release checklist is signed off.
 
 ## Features
 
@@ -28,7 +28,7 @@ BlurGo is an open-source, GPU-accelerated blur filter for OBS Studio. Add the fi
 3. Run the installer or extract the portable package into the matching OBS installation.
 4. Start OBS and check **Help → Log Files → View Current Log** for a `BlurGo` load entry.
 
-No public binary is published until the first alpha tag has passed the release checklist.
+No public binary is published until the first alpha tag has passed the complete release checklist. Current QA evidence is recorded in [`docs/qa/0.1.0-windows-smoke.md`](docs/qa/0.1.0-windows-smoke.md).
 
 ## Use BlurGo
 
