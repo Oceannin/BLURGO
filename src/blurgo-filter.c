@@ -117,6 +117,13 @@ static void *blurgo_filter_create(obs_data_t *settings, obs_source_t *context)
 	filter->composite_image = gs_effect_get_param_by_name(filter->composite_effect, "image");
 	filter->composite_original = gs_effect_get_param_by_name(filter->composite_effect, "original_image");
 	filter->composite_mix = gs_effect_get_param_by_name(filter->composite_effect, "mix_amount");
+	if (!filter->blur_image || !filter->blur_direction || !filter->blur_texture_size ||
+	    !filter->blur_pixel_size || !filter->composite_image || !filter->composite_original ||
+	    !filter->composite_mix) {
+		blog(LOG_ERROR, "[BlurGo] Required shader parameters are missing; the filter was not created");
+		blurgo_filter_destroy(filter);
+		return NULL;
+	}
 
 	blurgo_filter_update(filter, settings);
 	return filter;
@@ -308,6 +315,10 @@ static void blurgo_filter_render(void *data, gs_effect_t *effect)
 	obs_source_t *parent = obs_filter_get_parent(filter->context);
 
 	if (!target || !parent) {
+		obs_source_skip_video_filter(filter->context);
+		return;
+	}
+	if (!blurgo_settings_has_visible_effect(&filter->settings)) {
 		obs_source_skip_video_filter(filter->context);
 		return;
 	}

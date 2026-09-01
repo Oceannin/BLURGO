@@ -82,12 +82,30 @@ ctest --test-dir build_x86_64 --output-on-failure
 
 Build output is staged under the preset's `rundir` directory and packaged by GitHub Actions.
 
+## Reproduce the OBS runtime smoke test
+
+The runtime harness exercises real OBS rendering, filter settings, source and scene workflows, transparency, filter reorder/removal, resize, scene switching, and restart persistence. Enable OBS WebSocket, then run:
+
+```powershell
+python -m pip install -r tools/requirements-qa.txt
+python tools/obs-smoke.py run --output-dir artifacts/obs-smoke
+```
+
+Restart OBS normally and verify that the scene filter and its settings persisted:
+
+```powershell
+python tools/obs-smoke.py verify-persistence --output-dir artifacts/obs-smoke --report artifacts/obs-smoke/report.json
+```
+
+Use `--password` when OBS WebSocket authentication is enabled. The harness creates uniquely named QA scenes and leaves them in the test scene collection so restart persistence can be verified.
+
 ## Project structure
 
 ```text
 src/                         OBS module, filter lifecycle, and validated settings
 data/                        GPU effects and translations
 tests/                       Dependency-free settings tests
+tools/                       Reproducible OBS runtime QA harness
 docs/                        Architecture, product brief, decisions, and release QA
 cmake/, build-aux/           Official OBS plugin-template build infrastructure
 .github/                     Cross-platform build, format, package, and release workflows

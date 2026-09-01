@@ -37,7 +37,8 @@ input texrender (source color space)
 3. `video_render` negotiates the target color space and recreates render targets if the format changes.
 4. The target is captured once, processed through bounded GPU passes, and composited with the original.
 5. Missing targets, zero dimensions, capture failures, or render failures call OBS's safe filter-bypass path.
-6. `destroy` releases every GPU object inside the graphics context.
+6. Zero-mix and zero-radius blur settings bypass the full render pipeline before allocating per-frame GPU work.
+7. `destroy` releases every GPU object inside the graphics context.
 
 ## Performance model
 

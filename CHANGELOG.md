@@ -22,6 +22,13 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 - Cross-platform OBS plugin-template build, packaging, and draft-release workflows.
 - Product brief, architecture record, contributor guide, security policy, and release checklist.
 - Windows 11/D3D11 on-device smoke validation for image-source and nested-scene rendering.
+- Reproducible OBS WebSocket runtime harness for render, lifecycle, transparency, persistence, and basic performance evidence.
+
+### Fixed
+
+- Non-finite settings from external control now fall back to safe defaults instead of reaching GPU shaders.
+- Zero-mix and zero-radius blur settings now use OBS's direct filter bypass instead of spending GPU time on invisible passes.
+- Filter creation now fails safely when a required shader parameter is missing.
 
 ### Known limitations
 

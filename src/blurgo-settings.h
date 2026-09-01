@@ -10,6 +10,8 @@ the Free Software Foundation; either version 2 of the License, or
 
 #pragma once
 
+#include <stdbool.h>
+
 enum blurgo_mode {
 	BLURGO_MODE_GAUSSIAN = 0,
 	BLURGO_MODE_BOX = 1,
@@ -26,4 +28,5 @@ struct blurgo_settings {
 
 void blurgo_settings_defaults(struct blurgo_settings *settings);
 void blurgo_settings_normalize(struct blurgo_settings *settings);
+bool blurgo_settings_has_visible_effect(const struct blurgo_settings *settings);
 const char *blurgo_mode_technique(enum blurgo_mode mode);
