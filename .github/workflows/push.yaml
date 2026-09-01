@@ -34,6 +34,9 @@ jobs:
       run:
         shell: bash
     steps:
+      - name: Check Out Repository
+        uses: actions/checkout@v4
+
       - name: Check Release Tag ☑️
         id: check
         run: |
@@ -54,6 +57,16 @@ jobs:
               ;;
             *) echo 'validTag=false' >> $GITHUB_OUTPUT ;;
           esac
+
+      - name: Validate Release Version
+        if: fromJSON(steps.check.outputs.validTag)
+        run: |
+          : Validate Release Version
+          build_version="$(jq -r '.version' buildspec.json)"
+          if [[ "${{ steps.check.outputs.version }}" != "${build_version}" ]]; then
+            echo "::error::Release tag ${{ steps.check.outputs.version }} does not match buildspec.json ${build_version}."
+            exit 1
+          fi
 
       - name: Download Build Artifacts 📥
         uses: actions/download-artifact@v4
@@ -95,10 +108,23 @@ jobs:
           if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
           shopt -s extglob
 
-          echo "### Checksums" > ${{ github.workspace }}/CHECKSUMS.txt
+          echo "### Checksums" > "${{ github.workspace }}/CHECKSUMS.txt"
           for file in ${{ github.workspace }}/@(*.exe|*.deb|*.ddeb|*.pkg|*.tar.xz|*.zip); do
-            echo "    ${file##*/}: $(sha256sum "${file}" | cut -d " " -f 1)" >> ${{ github.workspace }}/CHECKSUMS.txt
+            echo "    ${file##*/}: $(sha256sum "${file}" | cut -d " " -f 1)" >> "${{ github.workspace }}/CHECKSUMS.txt"
           done
+
+      - name: Assemble Release Notes
+        if: fromJSON(steps.check.outputs.validTag)
+        run: |
+          : Assemble Release Notes
+          notes_file="docs/release-notes/${{ steps.check.outputs.version }}.md"
+          if [[ ! -f "${notes_file}" ]]; then
+            echo "::error::Missing versioned release notes: ${notes_file}"
+            exit 1
+          fi
+          cp "${notes_file}" "${{ github.workspace }}/RELEASE_NOTES.md"
+          printf '\n\n' >> "${{ github.workspace }}/RELEASE_NOTES.md"
+          cat "${{ github.workspace }}/CHECKSUMS.txt" >> "${{ github.workspace }}/RELEASE_NOTES.md"
 
       - name: Create Release 🛫
         if: fromJSON(steps.check.outputs.validTag)
@@ -109,7 +135,7 @@ jobs:
           prerelease: ${{ fromJSON(steps.check.outputs.prerelease) }}
           tag_name: ${{ steps.check.outputs.version }}
           name: ${{ needs.build-project.outputs.pluginName }} ${{ steps.check.outputs.version }}
-          body_path: ${{ github.workspace }}/CHECKSUMS.txt
+          body_path: ${{ github.workspace }}/RELEASE_NOTES.md
           files: |
             ${{ github.workspace }}/*.exe
             ${{ github.workspace }}/*.zip
