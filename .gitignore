@@ -1,5 +1,6 @@
 # Build output and downloaded SDKs
-/build*/
+/build/
+/build_*/
 /.deps/
 /install/
 
