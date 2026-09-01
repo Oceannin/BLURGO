@@ -66,8 +66,8 @@ technique Gaussian
 {
 	pass
 	{
-		vertex_shader = VSDefault(input);
-		pixel_shader = PSGaussian(input);
+		vertex_shader = VSDefault(vert_in);
+		pixel_shader = PSGaussian(vert_in);
 	}
 }
 
@@ -75,8 +75,8 @@ technique Box
 {
 	pass
 	{
-		vertex_shader = VSDefault(input);
-		pixel_shader = PSBox(input);
+		vertex_shader = VSDefault(vert_in);
+		pixel_shader = PSBox(vert_in);
 	}
 }
 
@@ -84,7 +84,7 @@ technique Pixelate
 {
 	pass
 	{
-		vertex_shader = VSDefault(input);
-		pixel_shader = PSPixelate(input);
+		vertex_shader = VSDefault(vert_in);
+		pixel_shader = PSPixelate(vert_in);
 	}
 }

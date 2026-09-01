@@ -33,7 +33,7 @@ technique Draw
 {
 	pass
 	{
-		vertex_shader = VSDefault(input);
-		pixel_shader = PSComposite(input);
+		vertex_shader = VSDefault(vert_in);
+		pixel_shader = PSComposite(vert_in);
 	}
 }

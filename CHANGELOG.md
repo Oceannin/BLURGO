@@ -28,7 +28,7 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 ### Fixed
 
 - Non-finite settings from external control now fall back to safe defaults instead of reaching GPU shaders.
-- Shader function identifiers now avoid GLSL reserved words, allowing the effects to compile on OpenGL as well as Direct3D.
+- Shader identifiers now avoid GLSL reserved words, allowing the effects to compile on OpenGL as well as Direct3D.
 - Zero-mix and zero-radius blur settings now use OBS's direct filter bypass instead of spending GPU time on invisible passes.
 - Filter creation now fails safely when a required shader parameter is missing.
 - Formatting workflows explicitly trust only the required OBS Homebrew formulae, preserving CI compatibility with Homebrew 6 tap security.
