@@ -2,7 +2,7 @@
 
 BlurGo is an open-source, GPU-accelerated blur filter for OBS Studio. Add the filter to one source, or add it to a scene to process the complete composited scene.
 
-> Status: `0.1.0` alpha candidate. Windows/D3D11, Ubuntu/OpenGL, and Apple Silicon macOS/OpenGL source and nested-scene rendering have passed runtime smoke tests; production streams should keep a tested OBS scene collection backup until the complete release checklist is signed off.
+> Status: `0.1.0` alpha pre-release. Windows/D3D11, Ubuntu/OpenGL, and Apple Silicon macOS/OpenGL source and nested-scene rendering have passed runtime smoke tests; production streams should still keep a tested OBS scene collection backup.
 
 ## Features
 
@@ -25,10 +25,16 @@ BlurGo is an open-source, GPU-accelerated blur filter for OBS Studio. Add the fi
 
 1. Download the package for your operating system from the GitHub Releases page.
 2. Close OBS Studio.
-3. Run the installer or extract the portable package into the matching OBS installation.
-4. Start OBS and check **Help → Log Files → View Current Log** for a `BlurGo` load entry.
+3. Install the package for your platform:
+   - **Windows x64 ZIP:** extract the archive, then copy its `blurgo` folder to `C:\ProgramData\obs-studio\plugins\`. The DLL should end up at `C:\ProgramData\obs-studio\plugins\blurgo\bin\64bit\blurgo.dll`. This is OBS's recommended manual-plugin layout; do not extract this ZIP directly over the OBS installation directory.
+   - **macOS Universal PKG:** open the `.pkg` and follow the installer prompts.
+   - **Ubuntu x86_64 DEB:** install the downloaded `.deb` with the system package manager.
+4. Start OBS and check **Help → Log Files → View Current Log** for `[blurgo] loaded successfully`.
+5. Select a source or scene, open **Filters**, and confirm **BlurGo** appears under **Effect Filters**.
 
-No public binary is published until the first alpha tag has passed the release checklist. Current QA evidence is recorded in the [Windows runtime report](docs/qa/0.1.0-windows-smoke.md), [Ubuntu runtime report](docs/qa/0.1.0-ubuntu-smoke.md), [macOS runtime report](docs/qa/0.1.0-macos-smoke.md), and [release gate status](docs/qa/0.1.0-gate-status.md). The remaining release gate is a short maintainer OBS acceptance check using the [manual sign-off form](docs/qa/0.1.0-manual-signoff.md); a real game or forced graphics reset is not required.
+See the official [OBS Plugins Guide](https://obsproject.com/kb/plugins-guide) for platform plugin locations and manual-install details.
+
+The public `0.1.0` package is an alpha pre-release backed by the [Windows runtime report](docs/qa/0.1.0-windows-smoke.md), [Ubuntu runtime report](docs/qa/0.1.0-ubuntu-smoke.md), [macOS runtime report](docs/qa/0.1.0-macos-smoke.md), [completed manual sign-off](docs/qa/0.1.0-manual-signoff.md), and [release gate status](docs/qa/0.1.0-gate-status.md). A real game or forced graphics reset is not a 0.1.0 release requirement.
 
 ## Use BlurGo
 
