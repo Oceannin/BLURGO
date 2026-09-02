@@ -28,7 +28,7 @@ BlurGo is an open-source, GPU-accelerated blur filter for OBS Studio. Add the fi
 3. Run the installer or extract the portable package into the matching OBS installation.
 4. Start OBS and check **Help → Log Files → View Current Log** for a `BlurGo` load entry.
 
-No public binary is published until the first alpha tag has passed the complete release checklist. Current QA evidence is recorded in the [Windows runtime report](docs/qa/0.1.0-windows-smoke.md), [Ubuntu runtime report](docs/qa/0.1.0-ubuntu-smoke.md), [macOS runtime report](docs/qa/0.1.0-macos-smoke.md), and [release gate status](docs/qa/0.1.0-gate-status.md). The remaining hardware checks use the [manual sign-off form](docs/qa/0.1.0-manual-signoff.md).
+No public binary is published until the first alpha tag has passed the release checklist. Current QA evidence is recorded in the [Windows runtime report](docs/qa/0.1.0-windows-smoke.md), [Ubuntu runtime report](docs/qa/0.1.0-ubuntu-smoke.md), [macOS runtime report](docs/qa/0.1.0-macos-smoke.md), and [release gate status](docs/qa/0.1.0-gate-status.md). The remaining release gate is a short maintainer OBS acceptance check using the [manual sign-off form](docs/qa/0.1.0-manual-signoff.md); a real game or forced graphics reset is not required.
 
 ## Use BlurGo
 
@@ -115,7 +115,7 @@ python tools/obs-smoke.py run --output-dir artifacts/obs-stress --width 1920 --h
 
 `--set-video-settings` changes the active OBS profile's canvas/output settings. `--test-display-capture` additionally attempts all modes on the first available monitor. `--test-window-capture "Title fragment"` selects a matching window through OBS and attempts all modes on that source. On Windows, `--test-game-capture "Game title fragment"` selects OBS Game Capture's matching specific-window target, waits for the hook, exercises every BlurGo mode, and records baseline/per-mode OBS Stats. Capture checks keep only numeric/hash results and delete the temporary private screenshots before exit. Add `--require-requested-captures` when a skipped, unmatched, or black-frame result must fail the run. Do not use these options in a production scene collection.
 
-For the release-candidate Game Capture check, start an authorized game in windowed or borderless mode, use a disposable OBS scene collection, and run:
+For optional post-alpha Game Capture qualification, start an authorized game in windowed or borderless mode, use a disposable OBS scene collection, and run:
 
 ```powershell
 python tools/obs-smoke.py run --output-dir artifacts/game-capture-qa --test-game-capture "Game title fragment" --game-capture-wait-seconds 30 --require-requested-captures

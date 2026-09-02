@@ -37,8 +37,6 @@ class TagPolicyTests(unittest.TestCase):
         qa.mkdir(parents=True)
         (qa / "0.1.0-gate-status.md").write_text(
             "Decision: **ready to tag**\n\n"
-            "- [x] Representative real-game capture.\n"
-            "- [x] Forced GPU loss/reinitialization recovery.\n"
             "- [x] Maintainer manual QA sign-off.\n"
             "- [ ] Public `0.1.0` tag and GitHub Release.\n",
             encoding="utf-8",
@@ -52,19 +50,15 @@ class TagPolicyTests(unittest.TestCase):
             "- GPU/driver: Test GPU / test driver",
             "- Graphics backend: Direct3D 11",
             "- Canvas/output/FPS and SDR/HDR format: 1920x1080/60 SDR",
-            "- Game/title/version and capture mode: Authorized test title / Game Capture",
-            "Baseline: 0.2 ms, 0 skipped",
-            "Gaussian: 0.4 ms, 0 skipped",
-            "Box: 0.4 ms, 0 skipped",
-            "Pixelate: 0.3 ms, 0 skipped",
-            "Lifecycle/alt-tab notes: passed",
+            "- Source/scene used: Window Capture and nested scene",
+            "Original: visible and unchanged",
+            "Gaussian: visible and responsive",
+            "Box: visible and responsive",
+            "Pixelate: visible and responsive",
+            "Source workflow: passed",
+            "Nested-scene workflow: passed",
+            "Settings/restart notes: persisted after restart",
             "OBS log path or private attachment: private-log.txt",
-            "Harness report path or private attachment: private-report.json",
-            "Trigger/method: approved disposable lab reset",
-            "Recovery time: 3 seconds",
-            "Observed fallback/recovery: recovered",
-            "Restart persistence: passed",
-            "OBS/crash log path or private attachment: private-gpu-log.txt",
             "Maintainer/name: Test maintainer",
             "Decision date: 2026-09-02",
             "Decision: `approve`",

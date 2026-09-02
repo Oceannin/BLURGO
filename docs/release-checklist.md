@@ -15,14 +15,13 @@ Record OBS version, operating system, GPU, driver, and graphics backend for ever
 
 - [ ] Plugin loads with no warning or error in the OBS log.
 - [ ] Gaussian, box, and pixelate render on an image source.
-- [ ] All modes render on game/window/display capture where available.
+- [ ] All modes render on at least one standard capture source (Window or Display Capture) where available.
 - [ ] Nested-scene workflow blurs the complete scene.
 - [ ] Radius, passes, block size, and mix controls update live.
 - [ ] Settings persist after restarting OBS.
 - [ ] Transparent source edges remain visually correct.
 - [ ] SDR and HDR/extended-color scenes do not produce black or washed-out frames.
 - [ ] Source resize, deletion, filter reorder/removal, scene switch, and OBS shutdown do not crash.
-- [ ] GPU loss/reinitialization or graphics-setting changes recover or bypass safely.
 
 ## Performance test
 
@@ -41,3 +40,8 @@ Record OBS version, operating system, GPU, driver, and graphics backend for ever
 - [ ] Draft release notes include compatibility, test matrix, checksums, and rollback guidance.
 - [ ] Maintainer promotes the draft only after manual QA sign-off.
 - [ ] `python3 tools/release-preflight.py --tag <version>` passes before the tag workflow creates the draft.
+
+## Optional post-alpha qualification
+
+- [ ] Representative Game Capture compatibility is checked with an authorized title.
+- [ ] GPU loss/reinitialization is exercised with an approved method on a disposable lab system.

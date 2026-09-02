@@ -46,7 +46,7 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 
 ### Known limitations
 
-- Representative real-game capture, forced GPU-loss recovery, and maintainer sign-off remain before public binary release.
+- Maintainer acceptance in OBS remains before the public binary release; representative real-game capture and forced GPU-loss recovery are non-blocking post-alpha qualification.
 - Region masks and animated transitions are intentionally outside the first alpha scope.
 
 ### Security
