@@ -72,6 +72,24 @@ class TagPolicyTests(unittest.TestCase):
             self.create_signed_candidate(root)
             self.assertEqual(PREFLIGHT.tag_errors(root, "0.1.0"), [])
 
+    def test_published_alpha_passes_tag_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            self.create_signed_candidate(root)
+            gate_path = root / "docs" / "qa" / "0.1.0-gate-status.md"
+            gate = gate_path.read_text(encoding="utf-8")
+            gate_path.write_text(
+                gate.replace(
+                    "Decision: **ready to tag**",
+                    "Decision: **released as alpha pre-release**",
+                ).replace(
+                    "- [ ] Public `0.1.0` tag and GitHub Release.",
+                    "- [x] Public `0.1.0` tag and GitHub Release.",
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(PREFLIGHT.tag_errors(root, "0.1.0"), [])
+
     def test_incomplete_candidate_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)

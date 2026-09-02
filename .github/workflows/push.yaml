@@ -51,7 +51,12 @@ jobs:
           case "${GITHUB_REF_NAME}" in
             +([0-9]).+([0-9]).+([0-9]) )
               echo 'validTag=true' >> $GITHUB_OUTPUT
-              echo 'prerelease=false' >> $GITHUB_OUTPUT
+              prerelease="$(jq -r '.prerelease // false' buildspec.json)"
+              if [[ "${prerelease}" != 'true' && "${prerelease}" != 'false' ]]; then
+                echo "::error::buildspec.json prerelease must be true or false"
+                exit 1
+              fi
+              echo "prerelease=${prerelease}" >> $GITHUB_OUTPUT
               echo "version=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
               ;;
             +([0-9]).+([0-9]).+([0-9])-@(beta|rc)*([0-9]) )
@@ -143,3 +148,4 @@ jobs:
             ${{ github.workspace }}/*.deb
             ${{ github.workspace }}/*.ddeb
             ${{ github.workspace }}/*.tar.xz
+            ${{ github.workspace }}/CHECKSUMS.txt

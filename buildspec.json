@@ -39,6 +39,7 @@
     "name": "blurgo",
     "displayName": "BlurGo for OBS",
     "version": "0.1.0",
+    "prerelease": true,
     "author": "BlurGo contributors",
     "website": "https://github.com/Oceannin/BLURGO",
     "email": "vladtheartist@gmail.com"

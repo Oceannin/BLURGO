@@ -221,8 +221,15 @@ def tag_errors(root: Path, tag: str) -> list[str]:
         errors.append(f"missing release gate status: {gate_path.relative_to(root).as_posix()}")
     else:
         gate = read_text(gate_path)
-        if "Decision: **ready to tag**" not in gate:
-            errors.append("release gate decision is not 'ready to tag'")
+        valid_decisions = (
+            "Decision: **ready to tag**",
+            "Decision: **released as alpha pre-release**",
+        )
+        if not any(decision in gate for decision in valid_decisions):
+            errors.append(
+                "release gate decision is neither 'ready to tag' nor "
+                "'released as alpha pre-release'"
+            )
         allowed_unchecked = f"Public `{version}` tag and GitHub Release."
         unchecked = [
             line[6:].strip()
