@@ -166,7 +166,8 @@ jobs:
           if [[ ! -d /Applications/OBS.app ]]; then
             brew install --cask obs
           fi
-          sudo /usr/sbin/installer -pkg "${BLURGO_PACKAGE}" -target /
+          /usr/sbin/installer -pkg "${BLURGO_PACKAGE}" -target CurrentUserHomeDirectory
+          test -x "${HOME}/Library/Application Support/obs-studio/plugins/${{ steps.setup.outputs.pluginName }}.plugin/Contents/MacOS/${{ steps.setup.outputs.pluginName }}"
           python3 -m venv "${BLURGO_QA_ROOT}/venv"
           "${BLURGO_QA_ROOT}/venv/bin/pip" install --requirement tools/requirements-qa.txt
           bash tools/run-macos-obs-smoke \
