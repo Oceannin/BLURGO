@@ -226,6 +226,33 @@ def compare_png(reference: Path, candidate: Path) -> dict[str, float | int | str
     }
 
 
+def find_matching_property_item(
+    property_items: list[dict[str, Any]], title_substring: str
+) -> dict[str, Any] | None:
+    title_folded = title_substring.casefold()
+    return next(
+        (
+            item
+            for item in property_items
+            if item.get("itemEnabled", True)
+            and item.get("itemValue") not in (None, "")
+            and title_folded
+            in f"{item.get('itemName', '')} {item.get('itemValue', '')}".casefold()
+        ),
+        None,
+    )
+
+
+def requested_capture_failures(
+    requested_captures: dict[str, dict[str, Any] | None],
+) -> list[str]:
+    return [
+        f"{name}: {result.get('reason', result.get('status'))}"
+        for name, result in requested_captures.items()
+        if result is not None and result.get("status") != "passed"
+    ]
+
+
 async def save_screenshot(client: ObsClient, source_name: str, path: Path, width: int, height: int) -> None:
     response = await client.request(
         "GetSourceScreenshot",
@@ -466,17 +493,10 @@ async def test_window_capture(
             {"inputName": source, "propertyName": "window"},
             allow_failure=True,
         )
-        property_items = property_response.get("propertyItems", [])
-        title_folded = title_substring.casefold()
-        matching_items = [
-            item
-            for item in property_items
-            if item.get("itemEnabled", True)
-            and item.get("itemValue") not in (None, "")
-            and title_folded
-            in f"{item.get('itemName', '')} {item.get('itemValue', '')}".casefold()
-        ]
-        if not matching_items:
+        matching_item = find_matching_property_item(
+            property_response.get("propertyItems", []), title_substring
+        )
+        if matching_item is None:
             return {
                 "status": "skipped",
                 "input_kind": candidates[0],
@@ -486,7 +506,7 @@ async def test_window_capture(
             "SetInputSettings",
             {
                 "inputName": source,
-                "inputSettings": {"window": matching_items[0]["itemValue"]},
+                "inputSettings": {"window": matching_item["itemValue"]},
                 "overlay": True,
             },
         )
@@ -542,6 +562,149 @@ async def test_window_capture(
             "input_kind": candidates[0],
             "selection": "matched_window",
             "results": results,
+        }
+    finally:
+        await client.request(
+            "SetCurrentProgramScene", {"sceneName": previous_scene}, allow_failure=True
+        )
+        await client.request("RemoveInput", {"inputName": source}, allow_failure=True)
+        await client.request("RemoveScene", {"sceneName": scene}, allow_failure=True)
+        for path in evidence_files:
+            path.unlink(missing_ok=True)
+
+
+async def test_game_capture(
+    client: ObsClient,
+    output: Path,
+    run_id: str,
+    width: int,
+    height: int,
+    title_substring: str,
+    wait_seconds: float,
+    stats_seconds: float,
+) -> dict[str, Any]:
+    kinds = (await client.request("GetInputKindList"))["inputKinds"]
+    candidates = [kind for kind in kinds if kind.startswith("game_capture")]
+    if not candidates:
+        return {"status": "skipped", "reason": "No Game Capture input kind is available"}
+
+    scene = f"BlurGo Game QA {run_id}"
+    source = f"BlurGo Game Capture {run_id}"
+    filter_name = "BlurGo Game QA"
+    evidence_files: list[Path] = []
+    previous_scene = (await client.request("GetCurrentProgramScene"))["currentProgramSceneName"]
+    await client.request("CreateScene", {"sceneName": scene})
+    try:
+        await client.request(
+            "CreateInput",
+            {
+                "sceneName": scene,
+                "inputName": source,
+                "inputKind": candidates[0],
+                "inputSettings": {"capture_mode": "window", "capture_cursor": False},
+                "sceneItemEnabled": True,
+            },
+        )
+        property_response = await client.request(
+            "GetInputPropertiesListPropertyItems",
+            {"inputName": source, "propertyName": "window"},
+            allow_failure=True,
+        )
+        matching_item = find_matching_property_item(
+            property_response.get("propertyItems", []), title_substring
+        )
+        if matching_item is None:
+            return {
+                "status": "skipped",
+                "input_kind": candidates[0],
+                "reason": "No enabled Game Capture target matched the requested title substring",
+            }
+
+        await client.request(
+            "SetInputSettings",
+            {
+                "inputName": source,
+                "inputSettings": {
+                    "capture_mode": "window",
+                    "window": matching_item["itemValue"],
+                    "capture_cursor": False,
+                },
+                "overlay": True,
+            },
+        )
+        await client.request("SetCurrentProgramScene", {"sceneName": scene})
+
+        baseline = output / "private-game-baseline.png"
+        evidence_files.append(baseline)
+        capture_started = time.monotonic()
+        baseline_metrics: dict[str, float | int | str] | None = None
+        last_error = "Game Capture did not produce a frame"
+        while time.monotonic() - capture_started < wait_seconds:
+            try:
+                await save_screenshot(client, source, baseline, width, height)
+                baseline_metrics = compare_png(baseline, baseline)
+                if baseline_metrics["black_pixel_ratio"] <= 0.98:
+                    break
+                last_error = "Game Capture remained almost entirely black"
+            except (ObsRequestError, RuntimeError) as error:
+                last_error = str(error)
+            await asyncio.sleep(0.5)
+
+        if baseline_metrics is None or baseline_metrics["black_pixel_ratio"] > 0.98:
+            return {
+                "status": "skipped",
+                "input_kind": candidates[0],
+                "selection": "matched_game",
+                "wait_seconds": wait_seconds,
+                "reason": last_error,
+            }
+
+        baseline_stats = await sample_stats(client, stats_seconds)
+        await client.request(
+            "CreateSourceFilter",
+            {
+                "sourceName": source,
+                "filterName": filter_name,
+                "filterKind": "blurgo_filter",
+                "filterSettings": {
+                    "mode": 0,
+                    "radius": 12.0,
+                    "passes": 2,
+                    "pixel_size": 20.0,
+                    "mix": 100.0,
+                },
+            },
+        )
+        results: dict[str, dict[str, float | int | str]] = {}
+        mode_stats: dict[str, dict[str, float]] = {}
+        for mode, name in ((0, "gaussian"), (1, "box"), (2, "pixelate")):
+            await client.request(
+                "SetSourceFilterSettings",
+                {
+                    "sourceName": source,
+                    "filterName": filter_name,
+                    "filterSettings": {"mode": mode},
+                    "overlay": True,
+                },
+            )
+            await asyncio.sleep(0.25)
+            mode_stats[name] = await sample_stats(client, stats_seconds)
+            candidate = output / f"private-game-{name}.png"
+            evidence_files.append(candidate)
+            await save_screenshot(client, source, candidate, width, height)
+            results[name] = compare_png(baseline, candidate)
+            if results[name]["black_pixel_ratio"] > 0.98:
+                raise RuntimeError(f"Game Capture {name} produced an almost entirely black frame")
+            if results[name]["mean_absolute_rgb_difference"] <= 0.05:
+                raise RuntimeError(f"Game Capture {name} did not materially change the frame")
+
+        return {
+            "status": "passed",
+            "input_kind": candidates[0],
+            "selection": "matched_game",
+            "wait_seconds": round(time.monotonic() - capture_started, 3),
+            "results": results,
+            "performance": {"baseline": baseline_stats, "modes": mode_stats},
         }
     finally:
         await client.request(
@@ -783,6 +946,31 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             if args.test_window_capture
             else {"status": "not_requested"}
         )
+        game_capture = (
+            await test_game_capture(
+                client,
+                output,
+                run_id,
+                args.width,
+                args.height,
+                args.test_game_capture,
+                args.game_capture_wait_seconds,
+                args.stats_seconds,
+            )
+            if args.test_game_capture
+            else {"status": "not_requested"}
+        )
+        if args.require_requested_captures:
+            requested_captures = {
+                "display_capture": display_capture if args.test_display_capture else None,
+                "window_capture": window_capture if args.test_window_capture else None,
+                "game_capture": game_capture if args.test_game_capture else None,
+            }
+            failed_captures = requested_capture_failures(requested_captures)
+            if failed_captures:
+                raise RuntimeError(
+                    "Required capture validation did not pass: " + "; ".join(failed_captures)
+                )
 
         persistence = await client.request("GetSourceFilterList", {"sourceName": scene})
 
@@ -830,6 +1018,7 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             "stress": stress,
             "display_capture": display_capture,
             "window_capture": window_capture,
+            "game_capture": game_capture,
             "final_stats": stats,
         }
 
@@ -876,6 +1065,22 @@ def parse_args() -> argparse.Namespace:
         metavar="TITLE_SUBSTRING",
         help="Capture a matching window locally, validate all modes, then delete private screenshots",
     )
+    parser.add_argument(
+        "--test-game-capture",
+        metavar="TITLE_SUBSTRING",
+        help="Capture a matching Windows game locally, validate all modes, then delete private screenshots",
+    )
+    parser.add_argument(
+        "--game-capture-wait-seconds",
+        type=float,
+        default=20.0,
+        help="Maximum time to wait for the requested Game Capture hook to produce a non-black frame",
+    )
+    parser.add_argument(
+        "--require-requested-captures",
+        action="store_true",
+        help="Fail instead of reporting skipped when any explicitly requested capture test cannot pass",
+    )
     return parser.parse_args()
 
 
@@ -883,8 +1088,21 @@ def main() -> None:
     args = parse_args()
     if args.width < 64 or args.height < 64:
         raise SystemExit("--width and --height must both be at least 64")
-    if args.fps < 1 or args.switch_interval <= 0.0 or args.stress_seconds < 0.0:
-        raise SystemExit("--fps and --switch-interval must be positive; --stress-seconds cannot be negative")
+    if (
+        args.fps < 1
+        or args.switch_interval <= 0.0
+        or args.stats_seconds <= 0.0
+        or args.stress_seconds < 0.0
+        or args.game_capture_wait_seconds <= 0.0
+    ):
+        raise SystemExit(
+            "--fps, --stats-seconds, --switch-interval, and --game-capture-wait-seconds must be positive; "
+            "--stress-seconds cannot be negative"
+        )
+    if args.test_window_capture is not None and not args.test_window_capture.strip():
+        raise SystemExit("--test-window-capture requires a non-empty title substring")
+    if args.test_game_capture is not None and not args.test_game_capture.strip():
+        raise SystemExit("--test-game-capture requires a non-empty title substring")
     result = asyncio.run(run_smoke(args) if args.command == "run" else verify_persistence(args))
     args.output_dir.mkdir(parents=True, exist_ok=True)
     destination = args.output_dir / ("report.json" if args.command == "run" else "persistence.json")

@@ -251,6 +251,9 @@ jobs:
           config: ${{ needs.check-event.outputs.config }}
           package: ${{ fromJSON(needs.check-event.outputs.package) }}
 
+      - name: Test OBS QA Harness
+        run: python3 tests/obs-smoke-test.py
+
       - name: Run OBS Runtime Smoke
         timeout-minutes: 5
         env:

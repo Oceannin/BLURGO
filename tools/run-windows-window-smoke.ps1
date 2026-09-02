@@ -87,7 +87,8 @@ try {
         --set-video-settings `
         --stats-seconds 3 `
         --scene-switches 20 `
-        --test-window-capture $WindowTitle
+        --test-window-capture $WindowTitle `
+        --require-requested-captures
     if ($LASTEXITCODE -ne 0) {
         throw "OBS runtime harness failed with exit code $LASTEXITCODE."
     }
