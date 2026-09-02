@@ -28,6 +28,10 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 - Privacy-preserving Windows Game Capture QA that selects an authorized title, waits for the capture hook, exercises every mode, and records per-mode OBS Stats.
 - Dependency-free release preflight that validates repository metadata on every build and rejects tags until the versioned manual QA evidence is complete.
 
+### Changed
+
+- Canonical GitHub repository name and project metadata are standardized as `BLURGO`.
+
 ### Fixed
 
 - Non-finite settings from external control now fall back to safe defaults instead of reaching GPU shaders.
