@@ -107,6 +107,8 @@ python tools/obs-smoke.py run --output-dir artifacts/obs-stress --width 1920 --h
 
 `--set-video-settings` changes the active OBS profile's canvas/output settings. `--test-display-capture` additionally attempts all modes on the first available monitor. `--test-window-capture "Title fragment"` selects a matching window through OBS and attempts all modes on that source. Capture checks report unsupported, unmatched, or black-frame sources as skipped, keep only numeric/hash results, and delete the temporary private screenshots before exit. Do not use these options in a production scene collection.
 
+For an isolated Windows Window Capture run, stage BlurGo in a disposable portable OBS copy, enable obs-websocket in that copy, and run `tools/run-windows-window-smoke.ps1`. The runner launches the deterministic target from `tools/show-window-capture-target.ps1`, invokes the harness, records the OBS log, and closes only the two processes it created.
+
 ## Project structure
 
 ```text

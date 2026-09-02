@@ -42,5 +42,5 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 
 ### Known limitations
 
-- Representative window/game capture, forced GPU-loss recovery, and maintainer sign-off remain before public binary release.
+- Representative real-game capture, forced GPU-loss recovery, and maintainer sign-off remain before public binary release.
 - Region masks and animated transitions are intentionally outside the first alpha scope.
