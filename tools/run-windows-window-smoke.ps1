@@ -50,7 +50,7 @@ try {
         -FilePath $obsExecutable `
         -WorkingDirectory (Split-Path -Parent $obsExecutable) `
         -ArgumentList @('--portable', '--multi', '--websocket_port=4455') `
-        -WindowStyle Hidden `
+        -WindowStyle Minimized `
         -RedirectStandardOutput $obsStdout `
         -RedirectStandardError $obsStderr `
         -PassThru
