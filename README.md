@@ -105,7 +105,7 @@ For controlled resolution and stability testing, use a disposable portable OBS p
 python tools/obs-smoke.py run --output-dir artifacts/obs-stress --width 1920 --height 1080 --fps 60 --set-video-settings --stress-seconds 1800
 ```
 
-`--set-video-settings` changes the active OBS profile's canvas/output settings. `--test-display-capture` additionally attempts all modes on the first available monitor, reports unsupported or black-frame capture as skipped, keeps only numeric/hash results, and deletes the temporary private screenshots before exit. Do not use either option in a production scene collection.
+`--set-video-settings` changes the active OBS profile's canvas/output settings. `--test-display-capture` additionally attempts all modes on the first available monitor. `--test-window-capture "Title fragment"` selects a matching window through OBS and attempts all modes on that source. Capture checks report unsupported, unmatched, or black-frame sources as skipped, keep only numeric/hash results, and delete the temporary private screenshots before exit. Do not use these options in a production scene collection.
 
 ## Project structure
 

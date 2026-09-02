@@ -431,6 +431,128 @@ async def test_display_capture(
             path.unlink(missing_ok=True)
 
 
+async def test_window_capture(
+    client: ObsClient,
+    output: Path,
+    run_id: str,
+    width: int,
+    height: int,
+    title_substring: str,
+) -> dict[str, Any]:
+    kinds = (await client.request("GetInputKindList"))["inputKinds"]
+    candidates = [kind for kind in kinds if kind.startswith("window_capture")]
+    if not candidates:
+        return {"status": "skipped", "reason": "No window capture input kind is available"}
+
+    scene = f"BlurGo Window QA {run_id}"
+    source = f"BlurGo Window Capture {run_id}"
+    filter_name = "BlurGo Window QA"
+    evidence_files: list[Path] = []
+    previous_scene = (await client.request("GetCurrentProgramScene"))["currentProgramSceneName"]
+    await client.request("CreateScene", {"sceneName": scene})
+    try:
+        await client.request(
+            "CreateInput",
+            {
+                "sceneName": scene,
+                "inputName": source,
+                "inputKind": candidates[0],
+                "inputSettings": {},
+                "sceneItemEnabled": True,
+            },
+        )
+        property_response = await client.request(
+            "GetInputPropertiesListPropertyItems",
+            {"inputName": source, "propertyName": "window"},
+            allow_failure=True,
+        )
+        property_items = property_response.get("propertyItems", [])
+        title_folded = title_substring.casefold()
+        matching_items = [
+            item
+            for item in property_items
+            if item.get("itemEnabled", True)
+            and item.get("itemValue") not in (None, "")
+            and title_folded
+            in f"{item.get('itemName', '')} {item.get('itemValue', '')}".casefold()
+        ]
+        if not matching_items:
+            return {
+                "status": "skipped",
+                "input_kind": candidates[0],
+                "reason": "No enabled window matched the requested title substring",
+            }
+        await client.request(
+            "SetInputSettings",
+            {
+                "inputName": source,
+                "inputSettings": {"window": matching_items[0]["itemValue"]},
+                "overlay": True,
+            },
+        )
+        await client.request("SetCurrentProgramScene", {"sceneName": scene})
+        await asyncio.sleep(1.5)
+        baseline = output / "private-window-baseline.png"
+        evidence_files.append(baseline)
+        await save_screenshot(client, source, baseline, width, height)
+        baseline_metrics = compare_png(baseline, baseline)
+        if baseline_metrics["black_pixel_ratio"] > 0.98:
+            return {
+                "status": "skipped",
+                "input_kind": candidates[0],
+                "selection": "matched_window",
+                "reason": "Selected window capture produced an almost entirely black frame",
+            }
+
+        await client.request(
+            "CreateSourceFilter",
+            {
+                "sourceName": source,
+                "filterName": filter_name,
+                "filterKind": "blurgo_filter",
+                "filterSettings": {
+                    "mode": 0,
+                    "radius": 12.0,
+                    "passes": 2,
+                    "pixel_size": 20.0,
+                    "mix": 100.0,
+                },
+            },
+        )
+        results: dict[str, dict[str, float | int | str]] = {}
+        for mode, name in ((0, "gaussian"), (1, "box"), (2, "pixelate")):
+            await client.request(
+                "SetSourceFilterSettings",
+                {
+                    "sourceName": source,
+                    "filterName": filter_name,
+                    "filterSettings": {"mode": mode},
+                    "overlay": True,
+                },
+            )
+            await asyncio.sleep(0.2)
+            candidate = output / f"private-window-{name}.png"
+            evidence_files.append(candidate)
+            await save_screenshot(client, source, candidate, width, height)
+            results[name] = compare_png(baseline, candidate)
+            if results[name]["mean_absolute_rgb_difference"] <= 0.05:
+                raise RuntimeError(f"Window capture {name} did not materially change the frame")
+        return {
+            "status": "passed",
+            "input_kind": candidates[0],
+            "selection": "matched_window",
+            "results": results,
+        }
+    finally:
+        await client.request(
+            "SetCurrentProgramScene", {"sceneName": previous_scene}, allow_failure=True
+        )
+        await client.request("RemoveInput", {"inputName": source}, allow_failure=True)
+        await client.request("RemoveScene", {"sceneName": scene}, allow_failure=True)
+        for path in evidence_files:
+            path.unlink(missing_ok=True)
+
+
 async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -649,6 +771,18 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             if args.test_display_capture
             else {"status": "not_requested"}
         )
+        window_capture = (
+            await test_window_capture(
+                client,
+                output,
+                run_id,
+                args.width,
+                args.height,
+                args.test_window_capture,
+            )
+            if args.test_window_capture
+            else {"status": "not_requested"}
+        )
 
         persistence = await client.request("GetSourceFilterList", {"sourceName": scene})
 
@@ -695,6 +829,7 @@ async def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
             "performance": {"baseline": baseline_stats, "filtered": filtered_stats},
             "stress": stress,
             "display_capture": display_capture,
+            "window_capture": window_capture,
             "final_stats": stats,
         }
 
@@ -735,6 +870,11 @@ def parse_args() -> argparse.Namespace:
         "--test-display-capture",
         action="store_true",
         help="Capture the first available monitor locally, validate all modes, then delete private screenshots",
+    )
+    parser.add_argument(
+        "--test-window-capture",
+        metavar="TITLE_SUBSTRING",
+        help="Capture a matching window locally, validate all modes, then delete private screenshots",
     )
     return parser.parse_args()
 
