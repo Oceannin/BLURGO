@@ -39,6 +39,7 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 - The OBS runtime harness can configure disposable video profiles, run long scene-switch stress tests, select display/window capture targets, and discard private capture frames after numeric validation.
 - Runtime alpha validation accepts near-transparent pixels produced by wide blur kernels while still rejecting lost or flattened alpha channels.
 - Windows QA now covers OBS 31.1.1 and 32.2.2, SDR through 4K60, P010/Rec. 2100 PQ, and a 30-minute memory-stability run.
+- GitHub workflows now use the Node 24-based checkout action, removing the hosted-runner Node 20 deprecation warning.
 
 ### Known limitations
 

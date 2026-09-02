@@ -35,7 +35,7 @@ jobs:
         shell: bash
     steps:
       - name: Check Out Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check Release Tag ☑️
         id: check
