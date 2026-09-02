@@ -2,6 +2,7 @@
 
 ## Automated gates
 
+- [ ] `python3 tools/release-preflight.py` passes.
 - [ ] Format workflow passes.
 - [ ] Windows x64 build and settings tests pass.
 - [ ] macOS Universal build and settings tests pass.
@@ -39,3 +40,4 @@ Record OBS version, operating system, GPU, driver, and graphics backend for ever
 - [ ] Security policy and license ship in source and packages.
 - [ ] Draft release notes include compatibility, test matrix, checksums, and rollback guidance.
 - [ ] Maintainer promotes the draft only after manual QA sign-off.
+- [ ] `python3 tools/release-preflight.py --tag <version>` passes before the tag workflow creates the draft.

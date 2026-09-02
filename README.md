@@ -82,6 +82,14 @@ ctest --test-dir build_x86_64 --output-on-failure
 
 Build output is staged under the preset's `rundir` directory and packaged by GitHub Actions.
 
+Validate version metadata, locale parity, dependency hashes, release files, workflow permissions, and immutable action pins with the dependency-free preflight:
+
+```bash
+python3 tools/release-preflight.py
+```
+
+The tagged release workflow additionally runs `python3 tools/release-preflight.py --tag <version>`. That mode rejects a tag until the versioned gate status says `ready to tag` and every required field and checkbox in the manual sign-off is complete.
+
 ## Reproduce the OBS runtime smoke test
 
 The runtime harness exercises real OBS rendering, filter settings, source and scene workflows, transparency, filter reorder/removal, resize, scene switching, and restart persistence. Enable OBS WebSocket, then run:

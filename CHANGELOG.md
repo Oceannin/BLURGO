@@ -26,6 +26,7 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 - Headless Ubuntu OBS runtime validation that installs and exercises the packaged plugin under Xvfb.
 - Hosted macOS OBS runtime validation that installs and exercises the packaged plugin in a real OBS process.
 - Privacy-preserving Windows Game Capture QA that selects an authorized title, waits for the capture hook, exercises every mode, and records per-mode OBS Stats.
+- Dependency-free release preflight that validates repository metadata on every build and rejects tags until the versioned manual QA evidence is complete.
 
 ### Fixed
 

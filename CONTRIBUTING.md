@@ -14,8 +14,9 @@ Thanks for helping make BlurGo dependable for live production.
 1. Create a branch such as `feature/mask-regions` or `fix/hdr-composite`.
 2. Configure and build with the preset for your operating system.
 3. Run CTest and the manual checks in `docs/release-checklist.md`.
-4. Run the repository format workflow or the matching local format scripts.
-5. Update `CHANGELOG.md` and user documentation when behavior changes.
+4. Run `python3 tools/release-preflight.py` to validate repository and release contracts.
+5. Run the repository format workflow or the matching local format scripts.
+6. Update `CHANGELOG.md` and user documentation when behavior changes.
 
 ## Pull requests
 
