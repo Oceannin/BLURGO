@@ -47,3 +47,8 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 
 - Representative real-game capture, forced GPU-loss recovery, and maintainer sign-off remain before public binary release.
 - Region masks and animated transitions are intentionally outside the first alpha scope.
+
+### Security
+
+- GitHub Actions dependencies are pinned to reviewed immutable commits and tracked by Dependabot.
+- Pull-request builds never receive inherited repository secrets or enable signing; release creation alone receives write permission.
