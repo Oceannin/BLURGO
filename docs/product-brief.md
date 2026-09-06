@@ -1,47 +1,18 @@
-# Product brief
+# Product scope
 
-## Problem
+BlurGo adds full-source GPU blur to OBS Studio. The same filter handles ordinary sources and a complete composition exposed as a nested Scene source.
 
-Streamers need reliable real-time blur without fragile browser overlays, duplicated scene captures, or vendor-specific GPU dependencies. Existing options often make scene-wide setup awkward or expose too little control.
+## Included in 0.1.0
 
-## Primary users
+- Gaussian, Box, and Pixelate modes with live radius/block-size, pass, and mix controls.
+- Source and nested-scene workflows in the standard OBS filter stack.
+- English and Russian controls.
+- Windows x64, macOS Universal, and Ubuntu x86_64 packages. See [release notes](release-notes/0.1.0.md) for tested environments and limitations.
 
-- Live streamers who must hide private or sensitive visual content.
-- Production operators who need a repeatable scene-level look.
-- OBS plugin contributors who need a maintainable blur foundation.
+## Outside the first alpha
 
-## Core job
+Region masks, object tracking, OCR, background segmentation, animated transitions, automatic scene switching, and hotkeys. BlurGo is not a standalone application or a privacy/redaction guarantee; render failures intentionally bypass the effect.
 
-Apply a predictable GPU blur to one visual source or to a complete composited scene, tune it without leaving OBS, and preserve stream stability if the effect cannot render.
+## Technical constraints
 
-## First alpha scope
-
-- Native OBS effect filter.
-- Gaussian, box, and pixelate modes.
-- Radius/block size, quality passes, and mix controls.
-- Source and nested-scene use.
-- English and Russian UI.
-- Windows x64 primary support with portable macOS/Linux build infrastructure.
-
-## Out of scope for the first alpha
-
-- Region masks, object tracking, and OCR-driven privacy detection.
-- Background segmentation.
-- Per-scene automatic switching and hotkeys.
-- A standalone application or browser overlay.
-- Installer signing and macOS notarization.
-
-## Success criteria
-
-- OBS loads and unloads the plugin without errors.
-- All modes render at 1080p60 without visual corruption on supported hardware.
-- Filter removal, source deletion, scene switching, and OBS shutdown do not crash.
-- Invalid or unavailable GPU resources bypass safely.
-- Settings survive OBS restart and stay within documented bounds.
-- Release artifacts build reproducibly in CI.
-
-## Constraints
-
-- OBS Studio 31.1.1 is the pinned build baseline.
-- Rendering must remain compatible with OBS graphics backends; no CUDA-only or Direct3D-only path.
-- The plugin is GPL-2.0-or-later to remain compatible with OBS Studio and the official plugin template.
+The build baseline is OBS Studio 31.1.1. Rendering uses portable OBS effects without vendor-specific GPU SDKs. The project is GPL-2.0-or-later. See [architecture](architecture.md) and the [native filter decision](decisions/0001-native-gpu-filter.md).

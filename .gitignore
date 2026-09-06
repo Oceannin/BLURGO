@@ -22,3 +22,18 @@ Thumbs.db
 
 # Generated build metadata
 /cmake/.CMakeBuildNumber
+
+# Private notes, credentials, and local QA environments
+/.local/
+/.venv/
+/venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+CMakeUserPresets.json
+*.pfx
+*.p12
+*.key
+*.pem

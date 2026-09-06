@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-labelledby="title desc">
+  <title id="title">BlurGo for OBS — Give your scene a softer side.</title>
+  <desc id="desc">A dark banner with mint lettering and an abstract sharp-to-soft geometric motif. Native GPU blur for OBS Studio.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#111c27"/><stop offset="1" stop-color="#080e15"/></linearGradient>
+    <linearGradient id="mint" x2="1" y2="1"><stop stop-color="#c4ffe7"/><stop offset="1" stop-color="#43cfa0"/></linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#c2fce4" stroke-opacity=".055"/></pattern>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="13"/></filter>
+    <clipPath id="card"><rect x="850" y="57" width="324" height="306" rx="26"/></clipPath>
+    <clipPath id="right"><rect x="1012" y="57" width="162" height="306"/></clipPath>
+    <g id="motif"><circle cx="1012" cy="208" r="93" fill="url(#mint)"/><rect x="965" y="161" width="94" height="94" rx="18" fill="#142e33"/><circle cx="1012" cy="208" r="18" fill="#adf4d7"/></g>
+  </defs>
+  <rect width="1280" height="420" rx="24" fill="url(#bg)"/>
+  <rect width="1280" height="420" rx="24" fill="url(#grid)"/>
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="64" y="48" width="181" height="30" rx="15" fill="#20382f"/>
+    <circle cx="81" cy="63" r="4" fill="#93edc6"/>
+    <text x="95" y="68" fill="#b9f4d9" font-size="12" font-weight="600" letter-spacing="1.8">NATIVE OBS FILTER</text>
+    <text x="60" y="185" fill="#f0f7f4" font-size="100" font-weight="750" letter-spacing="-5">BLUR<tspan fill="#9df1ce">GO</tspan></text>
+    <text x="64" y="238" fill="#e2ebe7" font-size="30" font-weight="400">Give your scene a softer side.</text>
+    <text x="65" y="279" fill="#9bada8" font-size="19">Real-time blur. Right inside OBS Studio.</text>
+    <path d="M65 316H745" stroke="#2a3b3d"/>
+    <text x="65" y="352" fill="#b6c9c3" font-size="15" letter-spacing="1.1">GAUSSIAN  /  BOX  /  PIXELATE</text>
+    <text x="744" y="352" fill="#87a49a" font-size="14" text-anchor="end">FREE &amp; OPEN SOURCE</text>
+    <rect x="850" y="57" width="324" height="306" rx="26" fill="#15252b" stroke="#354a4b"/>
+    <g clip-path="url(#card)"><use href="#motif"/><rect x="1012" y="57" width="162" height="306" fill="#15252b"/><g clip-path="url(#right)"><use href="#motif" filter="url(#soft)"/></g></g>
+    <path d="M1012 78V341" stroke="#eefbf5" stroke-opacity=".6"/>
+    <rect x="997" y="193" width="30" height="30" rx="15" fill="#e4f9ef"/>
+    <path d="m1008 202-5 6 5 6m8-12 5 6-5 6" stroke="#21463b" stroke-width="1.5" fill="none"/>
+    <text x="931" y="334" fill="#c1d6ce" font-size="11" text-anchor="middle" letter-spacing="2">SHARP</text>
+    <text x="1093" y="334" fill="#c1d6ce" font-size="11" text-anchor="middle" letter-spacing="2">SOFT</text>
+  </g>
+</svg>

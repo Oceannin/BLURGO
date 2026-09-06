@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Installation and troubleshooting
+    url: https://github.com/Oceannin/BLURGO#download
+    about: Start here for packages, setup, and common fixes.
+  - name: Security reporting
+    url: https://github.com/Oceannin/BLURGO/blob/main/SECURITY.md
+    about: Read the private reporting process before sharing a vulnerability.

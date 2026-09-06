@@ -12,15 +12,15 @@ Thanks for helping make BlurGo dependable for live production.
 ## Development workflow
 
 1. Create a branch such as `feature/mask-regions` or `fix/hdr-composite`.
-2. Configure and build with the preset for your operating system.
-3. Run CTest and the manual checks in `docs/release-checklist.md`.
+2. Follow the [development guide](docs/development.md) to configure and build for your operating system.
+3. Run CTest and the relevant [runtime checks](docs/testing.md). Use the [release checklist](docs/release-checklist.md) when preparing a release.
 4. Run `python3 tools/release-preflight.py` to validate repository and release contracts.
 5. Run the repository format workflow or the matching local format scripts.
 6. Update `CHANGELOG.md` and user documentation when behavior changes.
 
 ## Pull requests
 
-Include the user-visible problem and solution, tested OBS/platform/GPU details, before/after screenshots for rendering changes, relevant OBS logs, and performance measurements for shader changes.
+Include the user-visible problem and solution, tested OBS/platform/GPU details, before/after screenshots for rendering changes, redacted OBS log excerpts, and performance measurements for shader changes.
 
 Pull requests must build on every supported CI platform. A rendering change is not considered verified until it has been exercised inside OBS on at least one supported GPU.
 
@@ -34,4 +34,4 @@ Pull requests must build on every supported CI platform. A rendering change is n
 
 ## Reporting bugs
 
-Include reproduction steps, the scene/source topology, exact settings, OBS version, operating system, GPU/driver, graphics backend, and an OBS log file.
+Include reproduction steps, the scene/source topology, exact settings, OBS version, operating system, GPU/driver, graphics backend, and a redacted OBS log. Remove stream keys, private URLs, personal paths, and window titles before attaching evidence. Keep raw captures, logs, agent transcripts, and local plans outside Git; see [what belongs in Git](docs/README.md#what-belongs-in-git).

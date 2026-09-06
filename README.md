@@ -1,171 +1,106 @@
-# BlurGo for OBS
+<p align="center">
+  <img src="docs/assets/banner.svg" alt="BlurGo for OBS — Give your scene a softer side. Native GPU blur for OBS Studio." width="100%">
+</p>
 
-BlurGo is an open-source, GPU-accelerated blur filter for OBS Studio. Add the filter to one source, or add it to a scene to process the complete composited scene.
+<h1 align="center">BlurGo for OBS</h1>
 
-> Status: `0.1.0` alpha pre-release. Windows/D3D11, Ubuntu/OpenGL, and Apple Silicon macOS/OpenGL source and nested-scene rendering have passed runtime smoke tests; production streams should still keep a tested OBS scene collection backup.
+<p align="center">
+  GPU-accelerated Gaussian blur, Box blur, and Pixelate.<br>
+  One source or a whole nested scene. All inside OBS Studio.
+</p>
 
-## Features
+<p align="center">
+  <a href="https://github.com/Oceannin/BLURGO/releases/tag/0.1.0"><img src="https://img.shields.io/badge/release-0.1.0_alpha-9df1ce?style=flat-square&amp;labelColor=17252b" alt="Release: 0.1.0 alpha"></a>
+  <a href="https://github.com/Oceannin/BLURGO/actions/workflows/push.yaml"><img src="https://github.com/Oceannin/BLURGO/actions/workflows/push.yaml/badge.svg?branch=main" alt="Build and checks"></a>
+  <a href="https://obsproject.com/"><img src="https://img.shields.io/badge/OBS-31.1.1%2B-c8d7e1?style=flat-square&amp;labelColor=17252b" alt="OBS Studio 31.1.1 or newer"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--2.0--or--later-c8d7e1?style=flat-square&amp;labelColor=17252b" alt="License: GPL-2.0-or-later"></a>
+</p>
 
-- Gaussian blur with separable GPU passes.
-- Box blur for a flatter, more uniform look.
-- Pixelate mode with configurable block size.
-- Adjustable radius, 1–4 quality passes, and 0–100% effect mix.
-- Source and complete-scene workflows through the standard OBS filter stack.
-- English and Russian UI.
-- SDR, 16-bit sRGB, and extended Rec. 709 render-target handling.
-- Fail-safe rendering: invalid dimensions or GPU resource failures bypass the filter.
+<p align="center">
+  <a href="#download"><b>Download</b></a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#see-the-difference">Effects</a> ·
+  <a href="docs/README.md">Documentation</a> ·
+  <a href="https://github.com/Oceannin/BLURGO/issues/new/choose">Report a bug</a>
+</p>
 
-## Requirements
+## Your scene, with less detail
 
-- OBS Studio 31.1.1 or newer.
-- A graphics backend supported by OBS Studio.
-- Windows x64 is the primary alpha performance platform. Ubuntu 24.04 x86_64 and Apple Silicon macOS have packaged-plugin runtime coverage; the macOS package is Universal.
+- **Three looks.** Gaussian for soft edges, Box for a flatter blur, Pixelate for visible blocks.
+- **Live controls.** Adjust radius, quality passes, block size, and effect mix in the standard OBS filter panel.
+- **Flexible placement.** Filter a single source or an entire composition through a nested scene.
+- **Native rendering.** C17 and libobs GPU effects, with English and Russian controls. No browser overlay or separate runtime to install.
 
-## Install a release
+## See the difference
 
-1. Download the package for your operating system from the GitHub Releases page.
-2. Close OBS Studio.
-3. Install the package for your platform:
-   - **Windows x64 ZIP:** extract the archive, then copy its `blurgo` folder to `C:\ProgramData\obs-studio\plugins\`. The DLL should end up at `C:\ProgramData\obs-studio\plugins\blurgo\bin\64bit\blurgo.dll`. This is OBS's recommended manual-plugin layout; do not extract this ZIP directly over the OBS installation directory.
-   - **macOS Universal PKG:** open the `.pkg` and follow the installer prompts.
-   - **Ubuntu x86_64 DEB:** install the downloaded `.deb` with the system package manager.
-4. Start OBS and check **Help → Log Files → View Current Log** for `[blurgo] loaded successfully`.
-5. Select a source or scene, open **Filters**, and confirm **BlurGo** appears under **Effect Filters**.
+Actual BlurGo output from the [0.1.0 acceptance run](docs/qa/0.1.0-manual-signoff.md), using a generated test pattern. Gaussian and Box: radius 12, two passes. Pixelate: block size 16. All effects: 100% mix.
 
-See the official [OBS Plugins Guide](https://obsproject.com/kb/plugins-guide) for platform plugin locations and manual-install details.
+| Original | Gaussian |
+| :---: | :---: |
+| ![Original test pattern: a red circle and blue square on a checkerboard](docs/assets/source-original.png) | ![Gaussian blur softens the shapes and checkerboard](docs/assets/source-gaussian.png) |
+| **Box** | **Pixelate** |
+| ![Box blur produces a flatter blend across the pattern](docs/assets/source-box.png) | ![Pixelate turns the circle and square into stepped blocks](docs/assets/source-pixelate.png) |
 
-The public `0.1.0` package is an alpha pre-release backed by the [Windows runtime report](docs/qa/0.1.0-windows-smoke.md), [Ubuntu runtime report](docs/qa/0.1.0-ubuntu-smoke.md), [macOS runtime report](docs/qa/0.1.0-macos-smoke.md), [completed manual sign-off](docs/qa/0.1.0-manual-signoff.md), and [release gate status](docs/qa/0.1.0-gate-status.md). A real game or forced graphics reset is not a 0.1.0 release requirement.
+## Download
 
-## Use BlurGo
+Requires **OBS Studio 31.1.1 or newer**. Download a package from [the 0.1.0 release](https://github.com/Oceannin/BLURGO/releases/tag/0.1.0), then close OBS before installing.
+
+| Platform | Package | Install |
+| --- | --- | --- |
+| Windows x64 | [ZIP](https://github.com/Oceannin/BLURGO/releases/download/0.1.0/blurgo-0.1.0-windows-x64.zip) | Extract and copy the `blurgo` folder to `C:\ProgramData\obs-studio\plugins\`. |
+| macOS Universal | [PKG](https://github.com/Oceannin/BLURGO/releases/download/0.1.0/blurgo-0.1.0-macos-universal.pkg) | Open the package and follow the installer prompts. |
+| Ubuntu 24.04 x86_64 | [DEB](https://github.com/Oceannin/BLURGO/releases/download/0.1.0/blurgo-0.1.0-x86_64-linux-gnu.deb) | Install the downloaded package with your system package manager. |
+
+On Windows, the final DLL path is `C:\ProgramData\obs-studio\plugins\blurgo\bin\64bit\blurgo.dll`. Do not extract this ZIP over the OBS application directory. For other installation layouts, see the [OBS Plugins Guide](https://obsproject.com/kb/plugins-guide).
+
+> **Alpha release.** Back up your scene collection before upgrading. Windows binaries are unsigned; macOS signing/notarization depends on release certificates. Linux and macOS runtime checks used software rendering, so physical-GPU performance on those platforms remains unqualified. See [compatibility and known limitations](docs/release-notes/0.1.0.md).
+
+[All releases and checksums](https://github.com/Oceannin/BLURGO/releases) · [Changelog](CHANGELOG.md) · [Build from source](docs/development.md)
+
+## Quick start
 
 ### Blur one source
 
-1. Right-click the source and choose **Filters**.
-2. Under **Effect Filters**, select **+ → BlurGo**.
-3. Choose Gaussian, Box, or Pixelate and tune the visible controls.
+1. Restart OBS after installation.
+2. Right-click a source and open **Filters**.
+3. Under **Effect Filters**, select **+ → BlurGo**.
+4. Choose **Gaussian**, **Box**, or **Pixelate**, then adjust the visible controls.
 
-### Blur a complete scene
+### Blur a whole scene
 
-1. In **Sources**, add an existing scene as a **Scene** source inside a wrapper scene.
-2. Add **BlurGo** to that nested scene source.
-3. Use the wrapper scene for streaming or recording.
+1. Create a wrapper scene.
+2. Add your existing scene to it as a **Scene** source.
+3. Apply **BlurGo** to that nested scene source.
+4. Use the wrapper scene for streaming or recording.
 
-The wrapper-scene pattern avoids feedback and keeps the original scene reusable without blur.
+The original scene stays reusable. Avoid nesting a scene inside itself.
 
-## Build from source
+| Control | Range | Available in |
+| --- | --- | --- |
+| Radius | 0–64 | Gaussian, Box |
+| Quality passes | 1–4 | Gaussian, Box |
+| Pixel block size | 2–256 | Pixelate |
+| Effect mix | 0–100% | All modes |
 
-The repository follows the official OBS plugin template and downloads the pinned OBS build dependencies during configuration.
-
-### Windows x64
-
-Prerequisites: Visual Studio 2022 with Desktop development with C++, Git, and CMake 3.30.5.
-
-```powershell
-cmake --preset windows-x64
-cmake --build --preset windows-x64
-ctest --test-dir build_x64 -C RelWithDebInfo --output-on-failure
-```
-
-### macOS Universal
-
-Prerequisites: Xcode 16 and CMake 3.30.5.
-
-```bash
-cmake --preset macos
-cmake --build --preset macos
-ctest --test-dir build_macos -C RelWithDebInfo --output-on-failure
-```
-
-### Ubuntu 24.04 x86_64
-
-Prerequisites: CMake 3.28.3, Ninja, pkg-config, and build-essential.
-
-```bash
-cmake --preset ubuntu-x86_64
-cmake --build --preset ubuntu-x86_64
-ctest --test-dir build_x86_64 --output-on-failure
-```
-
-Build output is staged under the preset's `rundir` directory and packaged by GitHub Actions.
-
-Validate version metadata, locale parity, dependency hashes, release files, workflow permissions, and immutable action pins with the dependency-free preflight:
-
-```bash
-python3 tools/release-preflight.py
-```
-
-The tagged release workflow additionally runs `python3 tools/release-preflight.py --tag <version>`. That mode rejects a tag until the versioned gate status says `ready to tag` and every required field and checkbox in the manual sign-off is complete.
-
-## Reproduce the OBS runtime smoke test
-
-The runtime harness exercises real OBS rendering, filter settings, source and scene workflows, transparency, filter reorder/removal, resize, scene switching, and restart persistence. Enable OBS WebSocket, then run:
-
-```powershell
-python -m pip install -r tools/requirements-qa.txt
-python tools/obs-smoke.py run --output-dir artifacts/obs-smoke
-```
-
-Restart OBS normally and verify that the scene filter and its settings persisted:
-
-```powershell
-python tools/obs-smoke.py verify-persistence --output-dir artifacts/obs-smoke --report artifacts/obs-smoke/report.json
-```
-
-Use `--password` when OBS WebSocket authentication is enabled. The harness creates uniquely named QA scenes and leaves them in the test scene collection so restart persistence can be verified.
-
-For controlled resolution and stability testing, use a disposable portable OBS profile:
-
-```powershell
-python tools/obs-smoke.py run --output-dir artifacts/obs-stress --width 1920 --height 1080 --fps 60 --set-video-settings --stress-seconds 1800
-```
-
-`--set-video-settings` changes the active OBS profile's canvas/output settings. `--test-display-capture` additionally attempts all modes on the first available monitor. `--test-window-capture "Title fragment"` selects a matching window through OBS and attempts all modes on that source. On Windows, `--test-game-capture "Game title fragment"` selects OBS Game Capture's matching specific-window target, waits for the hook, exercises every BlurGo mode, and records baseline/per-mode OBS Stats. Capture checks keep only numeric/hash results and delete the temporary private screenshots before exit. Add `--require-requested-captures` when a skipped, unmatched, or black-frame result must fail the run. Do not use these options in a production scene collection.
-
-For optional post-alpha Game Capture qualification, start an authorized game in windowed or borderless mode, use a disposable OBS scene collection, and run:
-
-```powershell
-python tools/obs-smoke.py run --output-dir artifacts/game-capture-qa --test-game-capture "Game title fragment" --game-capture-wait-seconds 30 --require-requested-captures
-```
-
-Keep the OBS preview visible during the per-mode measurements for manual visual confirmation. The report deliberately does not retain the matched title, executable, or screenshots.
-
-For an isolated Windows Window Capture run, stage BlurGo in a disposable portable OBS copy, enable obs-websocket in that copy, and run `tools/run-windows-window-smoke.ps1`. The runner launches the deterministic target from `tools/show-window-capture-target.ps1`, invokes the harness with required-capture enforcement, records the OBS log, and closes only the two processes it created.
-
-## Project structure
-
-```text
-src/                         OBS module, filter lifecycle, and validated settings
-data/                        GPU effects and translations
-tests/                       Dependency-free settings tests
-tools/                       Reproducible OBS runtime QA harness
-docs/                        Architecture, product brief, decisions, and release QA
-cmake/, build-aux/           Official OBS plugin-template build infrastructure
-.github/                     Cross-platform build, format, package, and release workflows
-```
-
-## Performance guidance
-
-GPU cost grows with source resolution and quality passes. The following are conservative starting points, not guarantees; validate them with OBS Stats on the actual scene and capture backend.
-
-| GPU / workload | Starting point |
-| --- | --- |
-| Entry-level or integrated GPU, 1080p60 | Gaussian/Box radius 8-12, one pass; prefer Pixelate when it fits the look. |
-| Mid-tier GPU, 1080p60-1440p60 | Gaussian radius 12, two passes. |
-| High-tier GPU or 4K60 | Gaussian radius 12, two passes; reduce passes first if render time rises. |
-
-Pixelate requires one processing pass regardless of the quality-pass control. Apply BlurGo to a lower-resolution nested scene when the source does not need full-canvas resolution. The published 0.1.0 Windows measurements were collected on an RTX 4070 Ti SUPER and are documented in [the Windows runtime QA report](docs/qa/0.1.0-windows-smoke.md). The [Ubuntu runtime report](docs/qa/0.1.0-ubuntu-smoke.md) and [macOS runtime report](docs/qa/0.1.0-macos-smoke.md) use software OpenGL for functional coverage and are not hardware-performance benchmarks.
+Start with radius **12**, **two passes**, and **100% mix**. Reduce passes first if OBS render time rises. Pixelate uses one processing pass. See [performance guidance](docs/performance.md) for more starting points and measurement limits.
 
 ## Troubleshooting
 
-- **BlurGo is missing from the filter list:** confirm the plugin package matches the OBS architecture and inspect the OBS log for module-load errors.
-- **The image is unchanged:** ensure Effect mix is above 0% and the filter is enabled.
-- **GPU usage is high:** reduce Quality passes, apply the filter before expensive downstream filters, or blur a lower-resolution nested scene.
-- **The whole scene is not blurred:** use the nested/wrapper-scene workflow above; OBS does not expose the active root scene itself as a normal filter target.
+| What you see | What to check |
+| --- | --- |
+| BlurGo is missing | Confirm the package matches OBS's architecture. Open **Help → Log Files → View Current Log** and look for `[blurgo] loaded successfully` or module-load errors. |
+| The image is unchanged | Enable the filter, raise Effect mix above 0%, and use a nonzero blur radius. |
+| GPU render time is high | Reduce quality passes or filter a lower-resolution nested scene. |
+| Only part of the scene is blurred | Apply BlurGo to the nested Scene source using the wrapper workflow above. |
 
-## Contributing and security
+BlurGo processes the full source; region masks, tracking, and animated transitions are outside the first alpha. Blur is a visual effect, not a guarantee that sensitive information is unrecoverable. Resource failures bypass the effect and may show the original source.
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Please report security issues using the private process in [SECURITY.md](SECURITY.md), not a public issue.
+## Build and contribute
 
-## License
+Start with the [development guide](docs/development.md) for platform prerequisites, CMake presets, tests, and formatting. The [documentation index](docs/README.md) covers architecture, runtime testing, and release evidence.
 
-BlurGo is licensed under the GNU General Public License, version 2 or later. See [LICENSE](LICENSE).
+[Contributions](CONTRIBUTING.md), focused bug reports, and translations are welcome. For vulnerabilities, follow the private process in [SECURITY.md](SECURITY.md).
+
+## License and credits
+
+BlurGo is free software under [GPL-2.0-or-later](LICENSE). Built on [OBS Studio](https://github.com/obsproject/obs-studio) and the [official OBS plugin template](https://github.com/obsproject/obs-plugintemplate).

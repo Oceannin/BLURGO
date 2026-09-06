@@ -4,10 +4,11 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 
 ## [Unreleased]
 
-### Planned
+### Changed
 
-- Real-world GPU profiling on representative NVIDIA, AMD, and Intel hardware.
-- Signed Windows installer after the alpha test cycle.
+- Redesigned the README with download links and real effect comparisons.
+- Separated user, development, runtime-testing, and performance documentation.
+- Removed local QA paths and task-specific approval details from public documentation; documented what belongs in Git.
 
 ## [0.1.0] - 2026-09-01
 
@@ -50,7 +51,7 @@ All notable changes to BlurGo are documented here. The format is based on Keep a
 
 ### Known limitations
 
-- Maintainer acceptance in OBS remains before the public binary release; representative real-game capture and forced GPU-loss recovery are non-blocking post-alpha qualification.
+- Representative real-game capture and forced GPU-loss recovery remain post-alpha qualification; the 0.1.0 acceptance is recorded in the release evidence.
 - Region masks and animated transitions are intentionally outside the first alpha scope.
 
 ### Security
